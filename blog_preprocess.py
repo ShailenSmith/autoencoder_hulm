@@ -45,7 +45,7 @@ def main():
     blog_corpus = load_dataset('blog_authorship_corpus')
 
     # tokenize and batch
-    preprocess(tokenizer_checkpoint, blog_corpus, out_path="/data/batched_blog_corpus", block_size=128)
+    preprocess(tokenizer_checkpoint, blog_corpus, out_path="/data1/ssmith/batched_blog_corpus", block_size=128)
 
 
 if __name__ == "__main__":
