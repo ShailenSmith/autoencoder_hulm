@@ -1,4 +1,5 @@
 import transformers
+print('transformers ' + transformers.__version__)
 from datasets import load_dataset
 from transformers import AutoTokenizer
 
