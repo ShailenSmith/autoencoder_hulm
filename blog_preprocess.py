@@ -37,7 +37,7 @@ def preprocess(tokenizer_name, dataset, out_path, block_size):
   grouped_data.save_to_disk(out_path)
 
 def main():
-  print(f"transformers version {transformers.__version__}")
+  # print(f"transformers version {transformers.__version__}")
 
   # tokenizer name
   tokenizer_checkpoint = "bert-base-uncased"
