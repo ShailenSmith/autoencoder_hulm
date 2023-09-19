@@ -36,16 +36,16 @@ def preprocess(tokenizer_name, dataset, out_path, block_size):
   grouped_data.save_to_disk(out_path)
 
 def main():
-    print(f"transformers version {transformers.__version__}")
+  print(f"transformers version {transformers.__version__}")
 
-    # tokenizer name
-    tokenizer_checkpoint = "bert-base-uncased"
+  # tokenizer name
+  tokenizer_checkpoint = "bert-base-uncased"
 
-    # load data
-    blog_corpus = load_dataset('blog_authorship_corpus')
+  # load data
+  blog_corpus = load_dataset('blog_authorship_corpus')
 
-    # tokenize and batch
-    preprocess(tokenizer_checkpoint, blog_corpus, out_path="/data1/ssmith/batched_blog_corpus", block_size=128)
+  # tokenize and batch
+  preprocess(tokenizer_checkpoint, blog_corpus, out_path="/data1/ssmith/batched_blog_corpus", block_size=128)
 
 
 if __name__ == "__main__":
