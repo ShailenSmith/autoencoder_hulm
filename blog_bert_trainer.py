@@ -7,7 +7,7 @@ from transformers import DataCollatorForLanguageModeling
 from transformers import Trainer
 
 # load saved dataset
-batched_blog_corpus = load_from_disk("/data1/ssmith/batched_blog_corpus")
+batched_blog_corpus = load_from_disk("/chronos_data/ssmith/batched_blog_corpus")
 
 # model and tokenizer name
 model_checkpoint = "bert-base-uncased"
