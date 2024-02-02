@@ -1,0 +1,80 @@
+
+  0%|                                                                                                                                                                                                                  | 0/4 [00:00<?, ?it/s]You're using a RobertaTokenizerFast tokenizer. Please note that with a fast tokenizer, using the `__call__` method is faster than using a method to encode the text followed by a call to the `pad` method to get a padded encoding.
+100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:03<00:00,  1.80it/s]
+{'eval_loss': 7.469926357269287, 'eval_runtime': 0.471, 'eval_samples_per_second': 8.493, 'eval_steps_per_second': 2.123, 'epoch': 1.0}
+{'eval_loss': 7.469926357269287, 'eval_runtime': 0.471, 'eval_samples_per_second': 8.493, 'eval_steps_per_second': 2.123, 'epoch': 1.0, 'perplexity': 1754.4774763052144, 'trial_params': 'null'} /cronus_data/ssmith/models/blogsUD/new_optuna_param_test_2
+100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:03<00:00,  1.80it/s]There were missing keys in the checkpoint model loaded: ['lm_head.decoder.weight', 'lm_head.decoder.bias'].
+100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:04<00:00,  1.80it/s][33m[W 2024-01-23 11:48:31,714][39m Trial 0 failed with parameters: {'learning_rate': 0.0003799964728754871, 'weight_decay': 0.003386956810503517} because of the following error: AttributeError("'NoneType' object has no attribute 'copy'").
+Traceback (most recent call last):
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 200, in _run_trial
+    value_or_values = func(trial)
+  File "rev_trials.py", line 169, in objective
+    result = trainer.train()
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer.py", line 1537, in train
+    return inner_training_loop(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer.py", line 1990, in _inner_training_loop
+    self.control = self.callback_handler.on_train_end(args, self.state, self.control)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer_callback.py", line 373, in on_train_end
+    return self.call_event("on_train_end", args, state, control)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer_callback.py", line 414, in call_event
+    result = getattr(callback, event)(
+  File "rev_trials.py", line 68, in on_train_end
+    metrics = state.trial_params.copy()
+AttributeError: 'NoneType' object has no attribute 'copy'
+[33m[W 2024-01-23 11:48:31,737][39m Trial 0 failed with value None.
+Traceback (most recent call last):
+  File "rev_trials.py", line 220, in <module>
+    run_trials(data_path=data_paths[i],
+  File "rev_trials.py", line 176, in run_trials
+    study.optimize(func=objective, n_trials=4)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/study.py", line 451, in optimize
+    _optimize(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 66, in _optimize
+    _optimize_sequential(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 163, in _optimize_sequential
+    frozen_trial = _run_trial(study, func, catch)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 251, in _run_trial
+    raise func_err
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 200, in _run_trial
+    value_or_values = func(trial)
+  File "rev_trials.py", line 169, in objective
+    result = trainer.train()
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer.py", line 1537, in train
+    return inner_training_loop(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer.py", line 1990, in _inner_training_loop
+    self.control = self.callback_handler.on_train_end(args, self.state, self.control)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer_callback.py", line 373, in on_train_end
+    return self.call_event("on_train_end", args, state, control)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer_callback.py", line 414, in call_event
+    result = getattr(callback, event)(
+  File "rev_trials.py", line 68, in on_train_end
+    metrics = state.trial_params.copy()
+AttributeError: 'NoneType' object has no attribute 'copy'
+Traceback (most recent call last):
+  File "rev_trials.py", line 220, in <module>
+    run_trials(data_path=data_paths[i],
+  File "rev_trials.py", line 176, in run_trials
+    study.optimize(func=objective, n_trials=4)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/study.py", line 451, in optimize
+    _optimize(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 66, in _optimize
+    _optimize_sequential(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 163, in _optimize_sequential
+    frozen_trial = _run_trial(study, func, catch)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 251, in _run_trial
+    raise func_err
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 200, in _run_trial
+    value_or_values = func(trial)
+  File "rev_trials.py", line 169, in objective
+    result = trainer.train()
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer.py", line 1537, in train
+    return inner_training_loop(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer.py", line 1990, in _inner_training_loop
+    self.control = self.callback_handler.on_train_end(args, self.state, self.control)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer_callback.py", line 373, in on_train_end
+    return self.call_event("on_train_end", args, state, control)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer_callback.py", line 414, in call_event
+    result = getattr(callback, event)(
+  File "rev_trials.py", line 68, in on_train_end
+    metrics = state.trial_params.copy()
+AttributeError: 'NoneType' object has no attribute 'copy'

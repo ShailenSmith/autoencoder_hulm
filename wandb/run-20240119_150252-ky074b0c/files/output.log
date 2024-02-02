@@ -1,0 +1,30 @@
+
+pos embds stdev:  tensor(0.0662, grad_fn=<StdBackward0>)
+Traceback (most recent call last):
+  File "trials.py", line 226, in <module>
+    run_trials(data_path=data_paths[i],
+  File "trials.py", line 182, in run_trials
+    best_trial = trainer.hyperparameter_search(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer.py", line 2633, in hyperparameter_search
+    best_run = backend_obj.run(self, n_trials, direction, **kwargs)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/hyperparameter_search.py", line 72, in run
+    return run_hp_search_optuna(trainer, n_trials, direction, **kwargs)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/integrations/integration_utils.py", line 210, in run_hp_search_optuna
+    study = optuna.create_study(direction=direction, directions=directions, **kwargs)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/_convert_positional_args.py", line 63, in converter_wrapper
+    return func(**kwargs)
+TypeError: create_study() got an unexpected keyword argument 'callbacks'
+Traceback (most recent call last):
+  File "trials.py", line 226, in <module>
+    run_trials(data_path=data_paths[i],
+  File "trials.py", line 182, in run_trials
+    best_trial = trainer.hyperparameter_search(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer.py", line 2633, in hyperparameter_search
+    best_run = backend_obj.run(self, n_trials, direction, **kwargs)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/hyperparameter_search.py", line 72, in run
+    return run_hp_search_optuna(trainer, n_trials, direction, **kwargs)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/integrations/integration_utils.py", line 210, in run_hp_search_optuna
+    study = optuna.create_study(direction=direction, directions=directions, **kwargs)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/_convert_positional_args.py", line 63, in converter_wrapper
+    return func(**kwargs)
+TypeError: create_study() got an unexpected keyword argument 'callbacks'

@@ -1,0 +1,227 @@
+2024-01-19 15:06:40,516 INFO    StreamThr :3597754 [internal.py:wandb_internal():86] W&B internal server running at pid: 3597754, started at: 2024-01-19 15:06:40.514565
+2024-01-19 15:06:40,518 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: status
+2024-01-19 15:06:40,521 INFO    WriterThread:3597754 [datastore.py:open_for_write():87] open: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/run-hngirki8.wandb
+2024-01-19 15:06:40,523 DEBUG   SenderThread:3597754 [sender.py:send():382] send: header
+2024-01-19 15:06:40,523 DEBUG   SenderThread:3597754 [sender.py:send():382] send: run
+2024-01-19 15:06:40,713 INFO    SenderThread:3597754 [dir_watcher.py:__init__():211] watching files in: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files
+2024-01-19 15:06:40,713 INFO    SenderThread:3597754 [sender.py:_start_run_threads():1136] run started: hngirki8 with start time 1705694799.645496
+2024-01-19 15:06:40,738 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: check_version
+2024-01-19 15:06:40,738 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: check_version
+2024-01-19 15:06:40,810 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: run_start
+2024-01-19 15:06:40,816 DEBUG   HandlerThread:3597754 [system_info.py:__init__():27] System info init
+2024-01-19 15:06:40,816 DEBUG   HandlerThread:3597754 [system_info.py:__init__():42] System info init done
+2024-01-19 15:06:40,816 INFO    HandlerThread:3597754 [system_monitor.py:start():194] Starting system monitor
+2024-01-19 15:06:40,816 INFO    SystemMonitor:3597754 [system_monitor.py:_start():158] Starting system asset monitoring threads
+2024-01-19 15:06:40,817 INFO    HandlerThread:3597754 [system_monitor.py:probe():214] Collecting system info
+2024-01-19 15:06:40,818 INFO    SystemMonitor:3597754 [interfaces.py:start():190] Started cpu monitoring
+2024-01-19 15:06:40,819 INFO    SystemMonitor:3597754 [interfaces.py:start():190] Started disk monitoring
+2024-01-19 15:06:40,822 INFO    SystemMonitor:3597754 [interfaces.py:start():190] Started gpu monitoring
+2024-01-19 15:06:40,824 INFO    SystemMonitor:3597754 [interfaces.py:start():190] Started memory monitoring
+2024-01-19 15:06:40,824 INFO    SystemMonitor:3597754 [interfaces.py:start():190] Started network monitoring
+2024-01-19 15:06:40,877 DEBUG   HandlerThread:3597754 [system_info.py:probe():151] Probing system
+2024-01-19 15:06:40,879 DEBUG   HandlerThread:3597754 [system_info.py:_probe_git():136] Probing git
+2024-01-19 15:06:40,900 DEBUG   HandlerThread:3597754 [system_info.py:_probe_git():144] Probing git done
+2024-01-19 15:06:40,901 DEBUG   HandlerThread:3597754 [system_info.py:probe():199] Probing system done
+2024-01-19 15:06:40,901 DEBUG   HandlerThread:3597754 [system_monitor.py:probe():223] {'os': 'Linux-5.4.0-131-generic-x86_64-with-glibc2.29', 'python': '3.8.10', 'heartbeatAt': '2024-01-19T20:06:40.877279', 'startedAt': '2024-01-19T20:06:39.639897', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': 'trials.py', 'codePathLocal': 'trials.py', 'codePath': 'trials.py', 'git': {'remote': 'https://github.com/Shailen24/personal_hlab', 'commit': '0f35e14ceec025a7c0076408f8dc8ff2d9628b9a'}, 'email': None, 'root': '/home/ssmith/autoencoder_hulm', 'host': 'cronus', 'username': 'ssmith', 'executable': '/usr/bin/python3', 'cpu_count': 24, 'cpu_count_logical': 48, 'cpu_freq': {'current': 1493.7467916666665, 'min': 800.0, 'max': 3300.0}, 'cpu_freq_per_core': [{'current': 2100.0, 'min': 800.0, 'max': 3300.0}, {'current': 2698.976, 'min': 800.0, 'max': 3300.0}, {'current': 800.078, 'min': 800.0, 'max': 3300.0}, {'current': 2700.0, 'min': 800.0, 'max': 3300.0}, {'current': 2696.949, 'min': 800.0, 'max': 3300.0}, {'current': 2699.997, 'min': 800.0, 'max': 3300.0}, {'current': 2700.0, 'min': 800.0, 'max': 3300.0}, {'current': 2699.701, 'min': 800.0, 'max': 3300.0}, {'current': 800.0, 'min': 800.0, 'max': 3300.0}, {'current': 816.884, 'min': 800.0, 'max': 3300.0}, {'current': 800.0, 'min': 800.0, 'max': 3300.0}, {'current': 2700.636, 'min': 800.0, 'max': 3300.0}, {'current': 800.489, 'min': 800.0, 'max': 3300.0}, {'current': 800.485, 'min': 800.0, 'max': 3300.0}, {'current': 799.819, 'min': 800.0, 'max': 3300.0}, {'current': 800.495, 'min': 800.0, 'max': 3300.0}, {'current': 800.307, 'min': 800.0, 'max': 3300.0}, {'current': 2731.119, 'min': 800.0, 'max': 3300.0}, {'current': 800.734, 'min': 800.0, 'max': 3300.0}, {'current': 800.0, 'min': 800.0, 'max': 3300.0}, {'current': 800.605, 'min': 800.0, 'max': 3300.0}, {'current': 799.211, 'min': 800.0, 'max': 3300.0}, {'current': 800.0, 'min': 800.0, 'max': 3300.0}, {'current': 800.0, 'min': 800.0, 'max': 3300.0}, {'current': 2100.0, 'min': 800.0, 'max': 3300.0}, {'current': 2700.0, 'min': 800.0, 'max': 3300.0}, {'current': 799.775, 'min': 800.0, 'max': 3300.0}, {'current': 2700.0, 'min': 800.0, 'max': 3300.0}, {'current': 2699.997, 'min': 800.0, 'max': 3300.0}, {'current': 2700.372, 'min': 800.0, 'max': 3300.0}, {'current': 2699.997, 'min': 800.0, 'max': 3300.0}, {'current': 2700.0, 'min': 800.0, 'max': 3300.0}, {'current': 799.917, 'min': 800.0, 'max': 3300.0}, {'current': 835.052, 'min': 800.0, 'max': 3300.0}, {'current': 799.936, 'min': 800.0, 'max': 3300.0}, {'current': 2699.997, 'min': 800.0, 'max': 3300.0}, {'current': 800.705, 'min': 800.0, 'max': 3300.0}, {'current': 801.084, 'min': 800.0, 'max': 3300.0}, {'current': 799.059, 'min': 800.0, 'max': 3300.0}, {'current': 800.635, 'min': 800.0, 'max': 3300.0}, {'current': 801.355, 'min': 800.0, 'max': 3300.0}, {'current': 2696.715, 'min': 800.0, 'max': 3300.0}, {'current': 800.16, 'min': 800.0, 'max': 3300.0}, {'current': 799.339, 'min': 800.0, 'max': 3300.0}, {'current': 800.835, 'min': 800.0, 'max': 3300.0}, {'current': 800.138, 'min': 800.0, 'max': 3300.0}, {'current': 799.936, 'min': 800.0, 'max': 3300.0}, {'current': 800.0, 'min': 800.0, 'max': 3300.0}], 'disk': {'/': {'total': 428.07342529296875, 'used': 282.34731674194336}}, 'gpu': 'NVIDIA RTX A6000', 'gpu_count': 4, 'gpu_devices': [{'name': 'NVIDIA RTX A6000', 'memory_total': 51527024640}, {'name': 'NVIDIA RTX A6000', 'memory_total': 51527024640}, {'name': 'NVIDIA RTX A6000', 'memory_total': 51527024640}, {'name': 'NVIDIA RTX A6000', 'memory_total': 51527024640}], 'memory': {'total': 1007.5453834533691}}
+2024-01-19 15:06:40,901 INFO    HandlerThread:3597754 [system_monitor.py:probe():224] Finished collecting system info
+2024-01-19 15:06:40,901 INFO    HandlerThread:3597754 [system_monitor.py:probe():227] Publishing system info
+2024-01-19 15:06:40,902 INFO    HandlerThread:3597754 [system_monitor.py:probe():229] Finished publishing system info
+2024-01-19 15:06:40,904 DEBUG   SenderThread:3597754 [sender.py:send():382] send: files
+2024-01-19 15:06:40,904 INFO    SenderThread:3597754 [sender.py:_save_file():1403] saving file wandb-metadata.json with policy now
+2024-01-19 15:06:40,916 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: python_packages
+2024-01-19 15:06:40,917 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: python_packages
+2024-01-19 15:06:40,918 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: stop_status
+2024-01-19 15:06:40,918 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: stop_status
+2024-01-19 15:06:40,924 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: internal_messages
+2024-01-19 15:06:41,075 DEBUG   SenderThread:3597754 [sender.py:send():382] send: telemetry
+2024-01-19 15:06:41,075 DEBUG   SenderThread:3597754 [sender.py:send():382] send: config
+2024-01-19 15:06:41,077 DEBUG   SenderThread:3597754 [sender.py:send():382] send: metric
+2024-01-19 15:06:41,078 DEBUG   SenderThread:3597754 [sender.py:send():382] send: telemetry
+2024-01-19 15:06:41,078 DEBUG   SenderThread:3597754 [sender.py:send():382] send: metric
+2024-01-19 15:06:41,078 WARNING SenderThread:3597754 [sender.py:send_metric():1354] Seen metric with glob (shouldn't happen)
+2024-01-19 15:06:41,079 DEBUG   SenderThread:3597754 [sender.py:send():382] send: telemetry
+2024-01-19 15:06:41,200 INFO    wandb-upload_0:3597754 [upload_job.py:push():131] Uploaded file /tmp/tmp3bv2f98xwandb/u7uy648p-wandb-metadata.json
+2024-01-19 15:06:41,716 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_created():271] file/dir created: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/output.log
+2024-01-19 15:06:41,717 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_created():271] file/dir created: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/requirements.txt
+2024-01-19 15:06:41,717 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_created():271] file/dir created: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/wandb-metadata.json
+2024-01-19 15:06:43,715 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/output.log
+2024-01-19 15:06:45,716 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/output.log
+2024-01-19 15:06:45,741 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: status_report
+2024-01-19 15:06:47,717 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/output.log
+2024-01-19 15:06:49,718 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/output.log
+2024-01-19 15:06:50,791 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: status_report
+2024-01-19 15:06:51,719 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/output.log
+2024-01-19 15:06:53,720 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/output.log
+2024-01-19 15:06:55,721 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/output.log
+2024-01-19 15:06:55,800 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: status_report
+2024-01-19 15:06:55,918 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: stop_status
+2024-01-19 15:06:55,919 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: stop_status
+2024-01-19 15:06:55,919 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: internal_messages
+2024-01-19 15:06:57,722 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/output.log
+2024-01-19 15:06:59,723 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/output.log
+2024-01-19 15:07:01,201 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: status_report
+2024-01-19 15:07:01,724 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/output.log
+2024-01-19 15:07:03,199 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: partial_history
+2024-01-19 15:07:03,204 DEBUG   SenderThread:3597754 [sender.py:send():382] send: metric
+2024-01-19 15:07:03,205 DEBUG   SenderThread:3597754 [sender.py:send():382] send: metric
+2024-01-19 15:07:03,207 DEBUG   SenderThread:3597754 [sender.py:send():382] send: metric
+2024-01-19 15:07:03,210 DEBUG   SenderThread:3597754 [sender.py:send():382] send: metric
+2024-01-19 15:07:03,210 DEBUG   SenderThread:3597754 [sender.py:send():382] send: metric
+2024-01-19 15:07:03,211 DEBUG   SenderThread:3597754 [sender.py:send():382] send: history
+2024-01-19 15:07:03,211 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: summary_record
+2024-01-19 15:07:03,212 INFO    SenderThread:3597754 [sender.py:_save_file():1403] saving file wandb-summary.json with policy end
+2024-01-19 15:07:03,725 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/output.log
+2024-01-19 15:07:03,726 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_created():271] file/dir created: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/wandb-summary.json
+2024-01-19 15:07:05,726 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/output.log
+2024-01-19 15:07:05,938 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: partial_history
+2024-01-19 15:07:05,942 DEBUG   SenderThread:3597754 [sender.py:send():382] send: metric
+2024-01-19 15:07:05,943 DEBUG   SenderThread:3597754 [sender.py:send():382] send: metric
+2024-01-19 15:07:05,943 DEBUG   SenderThread:3597754 [sender.py:send():382] send: metric
+2024-01-19 15:07:05,944 DEBUG   SenderThread:3597754 [sender.py:send():382] send: metric
+2024-01-19 15:07:05,945 DEBUG   SenderThread:3597754 [sender.py:send():382] send: metric
+2024-01-19 15:07:05,945 DEBUG   SenderThread:3597754 [sender.py:send():382] send: history
+2024-01-19 15:07:05,945 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: summary_record
+2024-01-19 15:07:05,947 INFO    SenderThread:3597754 [sender.py:_save_file():1403] saving file wandb-summary.json with policy end
+2024-01-19 15:07:06,436 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: status_report
+2024-01-19 15:07:06,727 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/wandb-summary.json
+2024-01-19 15:07:07,004 DEBUG   SenderThread:3597754 [sender.py:send():382] send: telemetry
+2024-01-19 15:07:07,008 DEBUG   SenderThread:3597754 [sender.py:send():382] send: exit
+2024-01-19 15:07:07,008 INFO    SenderThread:3597754 [sender.py:send_exit():589] handling exit code: 0
+2024-01-19 15:07:07,009 INFO    SenderThread:3597754 [sender.py:send_exit():591] handling runtime: 26
+2024-01-19 15:07:07,010 INFO    SenderThread:3597754 [sender.py:_save_file():1403] saving file wandb-summary.json with policy end
+2024-01-19 15:07:07,010 INFO    SenderThread:3597754 [sender.py:send_exit():597] send defer
+2024-01-19 15:07:07,011 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: defer
+2024-01-19 15:07:07,011 INFO    HandlerThread:3597754 [handler.py:handle_request_defer():172] handle defer: 0
+2024-01-19 15:07:07,011 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: defer
+2024-01-19 15:07:07,011 INFO    SenderThread:3597754 [sender.py:send_request_defer():613] handle sender defer: 0
+2024-01-19 15:07:07,012 INFO    SenderThread:3597754 [sender.py:transition_state():617] send defer: 1
+2024-01-19 15:07:07,012 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: defer
+2024-01-19 15:07:07,012 INFO    HandlerThread:3597754 [handler.py:handle_request_defer():172] handle defer: 1
+2024-01-19 15:07:07,012 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: defer
+2024-01-19 15:07:07,012 INFO    SenderThread:3597754 [sender.py:send_request_defer():613] handle sender defer: 1
+2024-01-19 15:07:07,012 INFO    SenderThread:3597754 [sender.py:transition_state():617] send defer: 2
+2024-01-19 15:07:07,013 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: defer
+2024-01-19 15:07:07,013 INFO    HandlerThread:3597754 [handler.py:handle_request_defer():172] handle defer: 2
+2024-01-19 15:07:07,013 INFO    HandlerThread:3597754 [system_monitor.py:finish():203] Stopping system monitor
+2024-01-19 15:07:07,013 DEBUG   SystemMonitor:3597754 [system_monitor.py:_start():172] Starting system metrics aggregation loop
+2024-01-19 15:07:07,014 INFO    HandlerThread:3597754 [interfaces.py:finish():202] Joined cpu monitor
+2024-01-19 15:07:07,014 DEBUG   SystemMonitor:3597754 [system_monitor.py:_start():179] Finished system metrics aggregation loop
+2024-01-19 15:07:07,015 INFO    HandlerThread:3597754 [interfaces.py:finish():202] Joined disk monitor
+2024-01-19 15:07:07,015 DEBUG   SystemMonitor:3597754 [system_monitor.py:_start():183] Publishing last batch of metrics
+2024-01-19 15:07:07,727 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/output.log
+2024-01-19 15:07:07,728 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/wandb-summary.json
+2024-01-19 15:07:08,166 INFO    HandlerThread:3597754 [interfaces.py:finish():202] Joined gpu monitor
+2024-01-19 15:07:08,166 INFO    HandlerThread:3597754 [interfaces.py:finish():202] Joined memory monitor
+2024-01-19 15:07:08,167 INFO    HandlerThread:3597754 [interfaces.py:finish():202] Joined network monitor
+2024-01-19 15:07:08,167 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: poll_exit
+2024-01-19 15:07:08,168 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: defer
+2024-01-19 15:07:08,168 INFO    SenderThread:3597754 [sender.py:send_request_defer():613] handle sender defer: 2
+2024-01-19 15:07:08,168 INFO    SenderThread:3597754 [sender.py:transition_state():617] send defer: 3
+2024-01-19 15:07:08,169 DEBUG   SenderThread:3597754 [sender.py:send():382] send: stats
+2024-01-19 15:07:08,169 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: defer
+2024-01-19 15:07:08,170 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: poll_exit
+2024-01-19 15:07:08,170 INFO    HandlerThread:3597754 [handler.py:handle_request_defer():172] handle defer: 3
+2024-01-19 15:07:08,171 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: defer
+2024-01-19 15:07:08,172 INFO    SenderThread:3597754 [sender.py:send_request_defer():613] handle sender defer: 3
+2024-01-19 15:07:08,172 INFO    SenderThread:3597754 [sender.py:transition_state():617] send defer: 4
+2024-01-19 15:07:08,172 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: defer
+2024-01-19 15:07:08,172 INFO    HandlerThread:3597754 [handler.py:handle_request_defer():172] handle defer: 4
+2024-01-19 15:07:08,172 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: defer
+2024-01-19 15:07:08,172 INFO    SenderThread:3597754 [sender.py:send_request_defer():613] handle sender defer: 4
+2024-01-19 15:07:08,173 INFO    SenderThread:3597754 [sender.py:transition_state():617] send defer: 5
+2024-01-19 15:07:08,173 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: defer
+2024-01-19 15:07:08,173 INFO    HandlerThread:3597754 [handler.py:handle_request_defer():172] handle defer: 5
+2024-01-19 15:07:08,174 DEBUG   SenderThread:3597754 [sender.py:send():382] send: summary
+2024-01-19 15:07:08,175 INFO    SenderThread:3597754 [sender.py:_save_file():1403] saving file wandb-summary.json with policy end
+2024-01-19 15:07:08,176 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: defer
+2024-01-19 15:07:08,176 INFO    SenderThread:3597754 [sender.py:send_request_defer():613] handle sender defer: 5
+2024-01-19 15:07:08,176 INFO    SenderThread:3597754 [sender.py:transition_state():617] send defer: 6
+2024-01-19 15:07:08,176 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: defer
+2024-01-19 15:07:08,176 INFO    HandlerThread:3597754 [handler.py:handle_request_defer():172] handle defer: 6
+2024-01-19 15:07:08,177 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: defer
+2024-01-19 15:07:08,177 INFO    SenderThread:3597754 [sender.py:send_request_defer():613] handle sender defer: 6
+2024-01-19 15:07:08,182 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: status_report
+2024-01-19 15:07:08,328 INFO    SenderThread:3597754 [sender.py:transition_state():617] send defer: 7
+2024-01-19 15:07:08,328 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: defer
+2024-01-19 15:07:08,328 INFO    HandlerThread:3597754 [handler.py:handle_request_defer():172] handle defer: 7
+2024-01-19 15:07:08,329 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: defer
+2024-01-19 15:07:08,329 INFO    SenderThread:3597754 [sender.py:send_request_defer():613] handle sender defer: 7
+2024-01-19 15:07:08,728 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/config.yaml
+2024-01-19 15:07:08,729 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/wandb-summary.json
+2024-01-19 15:07:09,009 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: poll_exit
+2024-01-19 15:07:09,229 INFO    SenderThread:3597754 [sender.py:transition_state():617] send defer: 8
+2024-01-19 15:07:09,230 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: poll_exit
+2024-01-19 15:07:09,230 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: defer
+2024-01-19 15:07:09,231 INFO    HandlerThread:3597754 [handler.py:handle_request_defer():172] handle defer: 8
+2024-01-19 15:07:09,231 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: defer
+2024-01-19 15:07:09,232 INFO    SenderThread:3597754 [sender.py:send_request_defer():613] handle sender defer: 8
+2024-01-19 15:07:09,232 INFO    SenderThread:3597754 [job_builder.py:build():296] Attempting to build job artifact
+2024-01-19 15:07:09,235 INFO    SenderThread:3597754 [job_builder.py:_get_source_type():426] is repo sourced job
+2024-01-19 15:07:09,237 INFO    SenderThread:3597754 [job_builder.py:build():402] adding wandb-job metadata file
+2024-01-19 15:07:09,245 INFO    SenderThread:3597754 [sender.py:transition_state():617] send defer: 9
+2024-01-19 15:07:09,246 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: defer
+2024-01-19 15:07:09,246 DEBUG   SenderThread:3597754 [sender.py:send():382] send: artifact
+2024-01-19 15:07:09,247 INFO    HandlerThread:3597754 [handler.py:handle_request_defer():172] handle defer: 9
+2024-01-19 15:07:09,581 INFO    SenderThread:3597754 [sender.py:send_artifact():1494] sent artifact job-https___github.com_Shailen24_personal_hlab_trials.py - {'id': 'QXJ0aWZhY3Q6Njk3MDUwNzA3', 'state': 'COMMITTED', 'artifactSequence': {'id': 'QXJ0aWZhY3RDb2xsZWN0aW9uOjEzMTcwNzc1Ng==', 'latestArtifact': {'id': 'QXJ0aWZhY3Q6Njk3MDUwNzA3', 'versionIndex': 2}}}
+2024-01-19 15:07:09,581 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: defer
+2024-01-19 15:07:09,581 INFO    SenderThread:3597754 [sender.py:send_request_defer():613] handle sender defer: 9
+2024-01-19 15:07:09,582 INFO    SenderThread:3597754 [dir_watcher.py:finish():358] shutting down directory watcher
+2024-01-19 15:07:09,729 INFO    Thread-26 :3597754 [dir_watcher.py:_on_file_modified():288] file/dir modified: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/output.log
+2024-01-19 15:07:09,730 INFO    SenderThread:3597754 [dir_watcher.py:finish():388] scan: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files
+2024-01-19 15:07:09,730 INFO    SenderThread:3597754 [dir_watcher.py:finish():402] scan save: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/wandb-summary.json wandb-summary.json
+2024-01-19 15:07:09,731 INFO    SenderThread:3597754 [dir_watcher.py:finish():402] scan save: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/requirements.txt requirements.txt
+2024-01-19 15:07:09,731 INFO    SenderThread:3597754 [dir_watcher.py:finish():402] scan save: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/wandb-metadata.json wandb-metadata.json
+2024-01-19 15:07:09,736 INFO    SenderThread:3597754 [dir_watcher.py:finish():402] scan save: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/output.log output.log
+2024-01-19 15:07:09,743 INFO    SenderThread:3597754 [dir_watcher.py:finish():402] scan save: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/config.yaml config.yaml
+2024-01-19 15:07:09,749 INFO    SenderThread:3597754 [sender.py:transition_state():617] send defer: 10
+2024-01-19 15:07:09,750 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: defer
+2024-01-19 15:07:09,756 INFO    HandlerThread:3597754 [handler.py:handle_request_defer():172] handle defer: 10
+2024-01-19 15:07:09,757 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: defer
+2024-01-19 15:07:09,757 INFO    SenderThread:3597754 [sender.py:send_request_defer():613] handle sender defer: 10
+2024-01-19 15:07:09,757 INFO    SenderThread:3597754 [file_pusher.py:finish():175] shutting down file pusher
+2024-01-19 15:07:09,943 INFO    wandb-upload_0:3597754 [upload_job.py:push():131] Uploaded file /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/wandb-summary.json
+2024-01-19 15:07:09,994 INFO    wandb-upload_1:3597754 [upload_job.py:push():131] Uploaded file /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/requirements.txt
+2024-01-19 15:07:10,010 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: poll_exit
+2024-01-19 15:07:10,011 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: poll_exit
+2024-01-19 15:07:10,018 INFO    wandb-upload_2:3597754 [upload_job.py:push():131] Uploaded file /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/output.log
+2024-01-19 15:07:10,021 INFO    wandb-upload_3:3597754 [upload_job.py:push():131] Uploaded file /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/files/config.yaml
+2024-01-19 15:07:10,222 INFO    Thread-25 :3597754 [sender.py:transition_state():617] send defer: 11
+2024-01-19 15:07:10,223 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: defer
+2024-01-19 15:07:10,223 INFO    HandlerThread:3597754 [handler.py:handle_request_defer():172] handle defer: 11
+2024-01-19 15:07:10,224 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: defer
+2024-01-19 15:07:10,224 INFO    SenderThread:3597754 [sender.py:send_request_defer():613] handle sender defer: 11
+2024-01-19 15:07:10,224 INFO    SenderThread:3597754 [file_pusher.py:join():181] waiting for file pusher
+2024-01-19 15:07:10,224 INFO    SenderThread:3597754 [sender.py:transition_state():617] send defer: 12
+2024-01-19 15:07:10,225 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: defer
+2024-01-19 15:07:10,225 INFO    HandlerThread:3597754 [handler.py:handle_request_defer():172] handle defer: 12
+2024-01-19 15:07:10,225 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: defer
+2024-01-19 15:07:10,225 INFO    SenderThread:3597754 [sender.py:send_request_defer():613] handle sender defer: 12
+2024-01-19 15:07:10,225 INFO    SenderThread:3597754 [file_stream.py:finish():595] file stream finish called
+2024-01-19 15:07:10,393 INFO    SenderThread:3597754 [file_stream.py:finish():599] file stream finish is done
+2024-01-19 15:07:10,393 INFO    SenderThread:3597754 [sender.py:transition_state():617] send defer: 13
+2024-01-19 15:07:10,394 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: defer
+2024-01-19 15:07:10,394 INFO    HandlerThread:3597754 [handler.py:handle_request_defer():172] handle defer: 13
+2024-01-19 15:07:10,395 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: defer
+2024-01-19 15:07:10,395 INFO    SenderThread:3597754 [sender.py:send_request_defer():613] handle sender defer: 13
+2024-01-19 15:07:10,395 INFO    SenderThread:3597754 [sender.py:transition_state():617] send defer: 14
+2024-01-19 15:07:10,395 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: defer
+2024-01-19 15:07:10,396 INFO    HandlerThread:3597754 [handler.py:handle_request_defer():172] handle defer: 14
+2024-01-19 15:07:10,396 DEBUG   SenderThread:3597754 [sender.py:send():382] send: final
+2024-01-19 15:07:10,396 DEBUG   SenderThread:3597754 [sender.py:send():382] send: footer
+2024-01-19 15:07:10,397 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: defer
+2024-01-19 15:07:10,397 INFO    SenderThread:3597754 [sender.py:send_request_defer():613] handle sender defer: 14
+2024-01-19 15:07:10,398 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: poll_exit
+2024-01-19 15:07:10,399 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: poll_exit
+2024-01-19 15:07:10,400 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: internal_messages
+2024-01-19 15:07:10,401 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: server_info
+2024-01-19 15:07:10,402 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: server_info
+2024-01-19 15:07:10,443 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: get_summary
+2024-01-19 15:07:10,443 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: sampled_history
+2024-01-19 15:07:10,444 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: job_info
+2024-01-19 15:07:10,456 DEBUG   SenderThread:3597754 [sender.py:send_request():409] send_request: job_info
+2024-01-19 15:07:10,458 DEBUG   HandlerThread:3597754 [handler.py:handle_request():146] handle_request: shutdown
+2024-01-19 15:07:10,458 INFO    HandlerThread:3597754 [handler.py:finish():869] shutting down handler
+2024-01-19 15:07:11,445 INFO    WriterThread:3597754 [datastore.py:close():296] close: /home/ssmith/autoencoder_hulm/wandb/run-20240119_150639-hngirki8/run-hngirki8.wandb
+2024-01-19 15:07:11,457 INFO    SenderThread:3597754 [sender.py:finish():1572] shutting down sender
+2024-01-19 15:07:11,457 INFO    SenderThread:3597754 [file_pusher.py:finish():175] shutting down file pusher
+2024-01-19 15:07:11,457 INFO    SenderThread:3597754 [file_pusher.py:join():181] waiting for file pusher

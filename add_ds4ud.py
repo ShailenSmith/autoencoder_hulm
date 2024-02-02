@@ -46,9 +46,10 @@ if False:
     ds.save_to_disk("/cronus_data/ssmith/data/ds4ud_corpus")
 
 # add blogs
-blogs = load_from_disk("/cronus_data/ssmith/data/user_blogs/blog_corpus")
+blogs = load_from_disk("/cronus_data/ssmith/data/raw_blogs")
 blogs = blogs.remove_columns(['gender', 'age', 'horoscope', 'job'])
 blogs_train = blogs['train']
+print(blogs_train.to_pandas()['user_id'].describe()); exit()
 
 
 def make_user_str(row):

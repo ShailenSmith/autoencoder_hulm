@@ -1,0 +1,131 @@
+
+  0%|                                                                                                                                                                                                                  | 0/4 [00:00<?, ?it/s]You're using a RobertaTokenizerFast tokenizer. Please note that with a fast tokenizer, using the `__call__` method is faster than using a method to encode the text followed by a call to the `pad` method to get a padded encoding.
+100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:03<00:00,  1.78it/s]
+{'eval_loss': 6.576288223266602, 'eval_runtime': 0.4725, 'eval_samples_per_second': 8.465, 'eval_steps_per_second': 2.116, 'epoch': 1.0}
+100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:03<00:00,  1.78it/s]There were missing keys in the checkpoint model loaded: ['lm_head.decoder.weight', 'lm_head.decoder.bias'].
+100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:04<00:00,  1.25s/it]
+[32m[I 2024-01-22 11:59:17,348][39m Trial 0 finished with value: 6.576288223266602 and parameters: {'learning_rate': 9.910934451602152e-05, 'weight_decay': 0.003984293695222294, 'attention_probs_dropout_prob': 0.05275666758395117}. Best is trial 0 with value: 6.576288223266602.
+Trying to set attention_probs_dropout_prob in the hyperparameter search but there is no corresponding field in `TrainingArguments`.
+[33m[W 2024-01-22 11:59:17,777][39m Trial 1 failed with parameters: {'learning_rate': 6.030295935219618e-05, 'weight_decay': 0.0052100543614607, 'attention_probs_dropout_prob': 0.0613681577768646} because of the following error: KeyboardInterrupt().
+Traceback (most recent call last):
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 200, in _run_trial
+    value_or_values = func(trial)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/integrations/integration_utils.py", line 199, in _objective
+    trainer.train(resume_from_checkpoint=checkpoint, trial=trial)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer.py", line 1492, in train
+    self.model = self.call_model_init(trial)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer.py", line 1236, in call_model_init
+    model = self.model_init()
+  File "trials.py", line 115, in model_init
+    distil_model = AutoModelForMaskedLM.from_pretrained("distilroberta-base",
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/models/auto/auto_factory.py", line 566, in from_pretrained
+    return model_class.from_pretrained(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/modeling_utils.py", line 3706, in from_pretrained
+    ) = cls._load_pretrained_model(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/modeling_utils.py", line 3968, in _load_pretrained_model
+    model.apply(model._initialize_weights)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/torch/nn/modules/module.py", line 884, in apply
+    module.apply(fn)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/torch/nn/modules/module.py", line 884, in apply
+    module.apply(fn)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/torch/nn/modules/module.py", line 885, in apply
+    fn(self)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/modeling_utils.py", line 1551, in _initialize_weights
+    self._init_weights(module)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/models/roberta/modeling_roberta.py", line 600, in _init_weights
+    module.weight.data.normal_(mean=0.0, std=self.config.initializer_range)
+KeyboardInterrupt
+[33m[W 2024-01-22 11:59:17,866][39m Trial 1 failed with value None.
+Traceback (most recent call last):
+  File "trials.py", line 234, in <module>
+    run_trials(data_path=data_paths[i],
+  File "trials.py", line 180, in run_trials
+    best_trial = trainer.hyperparameter_search(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer.py", line 2633, in hyperparameter_search
+    best_run = backend_obj.run(self, n_trials, direction, **kwargs)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/hyperparameter_search.py", line 72, in run
+    return run_hp_search_optuna(trainer, n_trials, direction, **kwargs)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/integrations/integration_utils.py", line 211, in run_hp_search_optuna
+    study.optimize(_objective, n_trials=n_trials, timeout=timeout, n_jobs=n_jobs)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/study.py", line 451, in optimize
+    _optimize(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 66, in _optimize
+    _optimize_sequential(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 163, in _optimize_sequential
+    frozen_trial = _run_trial(study, func, catch)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 251, in _run_trial
+    raise func_err
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 200, in _run_trial
+    value_or_values = func(trial)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/integrations/integration_utils.py", line 199, in _objective
+    trainer.train(resume_from_checkpoint=checkpoint, trial=trial)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer.py", line 1492, in train
+    self.model = self.call_model_init(trial)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer.py", line 1236, in call_model_init
+    model = self.model_init()
+  File "trials.py", line 115, in model_init
+    distil_model = AutoModelForMaskedLM.from_pretrained("distilroberta-base",
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/models/auto/auto_factory.py", line 566, in from_pretrained
+    return model_class.from_pretrained(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/modeling_utils.py", line 3706, in from_pretrained
+    ) = cls._load_pretrained_model(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/modeling_utils.py", line 3968, in _load_pretrained_model
+    model.apply(model._initialize_weights)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/torch/nn/modules/module.py", line 884, in apply
+    module.apply(fn)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/torch/nn/modules/module.py", line 884, in apply
+    module.apply(fn)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/torch/nn/modules/module.py", line 885, in apply
+    fn(self)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/modeling_utils.py", line 1551, in _initialize_weights
+    self._init_weights(module)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/models/roberta/modeling_roberta.py", line 600, in _init_weights
+    module.weight.data.normal_(mean=0.0, std=self.config.initializer_range)
+KeyboardInterrupt
+Traceback (most recent call last):
+  File "trials.py", line 234, in <module>
+    run_trials(data_path=data_paths[i],
+  File "trials.py", line 180, in run_trials
+    best_trial = trainer.hyperparameter_search(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer.py", line 2633, in hyperparameter_search
+    best_run = backend_obj.run(self, n_trials, direction, **kwargs)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/hyperparameter_search.py", line 72, in run
+    return run_hp_search_optuna(trainer, n_trials, direction, **kwargs)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/integrations/integration_utils.py", line 211, in run_hp_search_optuna
+    study.optimize(_objective, n_trials=n_trials, timeout=timeout, n_jobs=n_jobs)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/study.py", line 451, in optimize
+    _optimize(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 66, in _optimize
+    _optimize_sequential(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 163, in _optimize_sequential
+    frozen_trial = _run_trial(study, func, catch)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 251, in _run_trial
+    raise func_err
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/optuna/study/_optimize.py", line 200, in _run_trial
+    value_or_values = func(trial)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/integrations/integration_utils.py", line 199, in _objective
+    trainer.train(resume_from_checkpoint=checkpoint, trial=trial)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer.py", line 1492, in train
+    self.model = self.call_model_init(trial)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/trainer.py", line 1236, in call_model_init
+    model = self.model_init()
+  File "trials.py", line 115, in model_init
+    distil_model = AutoModelForMaskedLM.from_pretrained("distilroberta-base",
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/models/auto/auto_factory.py", line 566, in from_pretrained
+    return model_class.from_pretrained(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/modeling_utils.py", line 3706, in from_pretrained
+    ) = cls._load_pretrained_model(
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/modeling_utils.py", line 3968, in _load_pretrained_model
+    model.apply(model._initialize_weights)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/torch/nn/modules/module.py", line 884, in apply
+    module.apply(fn)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/torch/nn/modules/module.py", line 884, in apply
+    module.apply(fn)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/torch/nn/modules/module.py", line 885, in apply
+    fn(self)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/modeling_utils.py", line 1551, in _initialize_weights
+    self._init_weights(module)
+  File "/chronos_data/ssmith/lib/python3.8/site-packages/transformers/models/roberta/modeling_roberta.py", line 600, in _init_weights
+    module.weight.data.normal_(mean=0.0, std=self.config.initializer_range)
+KeyboardInterrupt
+{'train_runtime': 6.8046, 'train_samples_per_second': 0.588, 'train_steps_per_second': 0.588, 'train_loss': 6.69017219543457, 'epoch': 1.0}

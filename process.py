@@ -1,5 +1,5 @@
 from datasets import load_from_disk, concatenate_datasets
-from datasets import Dataset, DatasetDict
+from datasets import Dataset, DatasetDict, Features, Value
 from transformers import AutoTokenizer
 import numpy as np
 import pandas as pd
@@ -234,6 +234,7 @@ def unchunk_data(tokenizer, ds):
     return unchunked_ds
 
 
+
 def df_to_ds(train_df, val_df, test_df=None):    
     train_ds = Dataset.from_pandas(train_df, preserve_index=False)
     val_ds = Dataset.from_pandas(val_df, preserve_index=False)
@@ -243,6 +244,21 @@ def df_to_ds(train_df, val_df, test_df=None):
     if test_df is not None:
         ds['test'] = Dataset.from_pandas(test_df, preserve_index=False)
     return ds
+
+
+def separate_blogs_ud(ds): # deconstruct ds into (blogs_ds, ud_ds)
+    blogs_dfs = {}
+    ud_dfs = {}
+    for split in ds.keys():
+        split_df = ds[split].to_pandas()
+        split_df['user_id'] = split_df['user_id'].apply(int)
+        blogs_dfs[split] = split_df[split_df['user_id'] >= 5000] # min blogs user_id is 5114
+        ud_dfs[split] = split_df[split_df['user_id'] < 5000] # max ud user_id is 2333
+
+    blogs_ds = df_to_ds(*[blogs_dfs[split] for split in blogs_dfs.keys()])
+    ud_ds = df_to_ds(*[ud_dfs[split] for split in ud_dfs.keys()])
+    print(blogs_ds, ud_ds)
+    return blogs_ds, ud_ds
 
 
 def sample_users(ds, p=0.05):
@@ -412,6 +428,9 @@ tokenizer = AutoTokenizer.from_pretrained("roberta-base")
 block_size = 4096
 multiple_rows = False
 
+blogs_path = "/cronus_data/ssmith/data/blog_corpus"
+ds4ud_csv_path = "/cronus_data/ssmith/data/raw_ds4ud_FB.csv"
+ds4ud_path = "/cronus_data/ssmith/data/ds4ud_corpus"
 base_path = "/cronus_data/ssmith/data/blogsUD/"
 untokenized_path = base_path + "blogsUD_corpus"
 tokenized_path = base_path + "tokenized_corpus"
@@ -427,16 +446,23 @@ sample_chunked_path = base_path + f"sample_chunked_{str(block_size)}"
 sample_chunked_dsep_path = base_path + f"sample_chunked_dsep_{str(block_size)}"
 unchunked_path = base_path + f"unchunked_{str(block_size)}"
 
-
 if multiple_rows:
     chunked_path += "_mr"
 
 
 if True:
     concat_ds = load_from_disk(concat_path)
-    describe_lens(concat_ds)
-    exit()
+    separate_blogs_ud(concat_ds); exit()
 
+
+if False: # load ud and blogs and check user ids
+    ud_ds = load_from_disk(ds4ud_path)
+    blogs_ds = load_from_disk(blogs_path)
+    print(pd.Series(ud_ds['train'].to_pandas()['user_id'].apply(int).unique()).describe())
+    print(pd.Series(blogs_ds['train'].to_pandas()['user_id'].apply(int).unique()).describe())
+    exit()
+    
+    
 
 if False:
     sample_chunked = load_from_disk(sample_chunked_path)
@@ -456,7 +482,6 @@ if False: # chunk both and remove short docs on both and save
     describe_lens(sample_chunked_dsep)
     sample_chunked.save_to_disk(sample_chunked_path)
     sample_chunked_dsep.save_to_disk(sample_chunked_dsep_path) 
-
 
 if False: # create dsep from concat sample
     ds = load_from_disk(sample_concat_path)
@@ -587,125 +612,3 @@ if False: # analyze some responses from chunked vs unchunked
     print("\n\n\n\n\n\n")
     for i in range(2):
         print(tokenizer.decode(chunked_nvns['train'][i]['input_ids']), chunked_nvns['train'][i]['user_id'], "\n\n")
-
-           
-
-
-
-if False: # create non verbose set
-    tokenized_ds = load_from_disk(tokenized_path)
-    describe_lens(tokenized_ds, user=True)
-    nv_train_df = remove_verbose_users(tokenized_ds['train'])
-    nv_val_df = remove_verbose_users(tokenized_ds['validation'])
-    nv_ds = df_to_ds(nv_train_df, nv_val_df)
-    nv_ds.save_to_disk(nv_path)
-
-if False:
-    chunked_ds = load_from_disk(chunked_path)
-    unchunked_ds = unchunk_data(tokenizer, chunked_ds)
-    describe_lens(unchunked_ds)
-    unchunked_ds.save_to_disk(unchunked_path)
-
-if False: # chunk necls and normal sample
-    small_concat_ds = load_from_disk(small_concat_path)
-    small_concat_necls = load_from_disk(small_concat_necls_path)
-
-    small_chunked_ds = chunk_data(tokenizer, small_concat_ds, block_size, multiple_rows)
-    small_chunked_necls = chunk_data(tokenizer, small_concat_necls, block_size, multiple_rows)
-    small_chunked_ds.save_to_disk(small_chunked_path)
-    small_chunked_necls.save_to_disk(small_chunked_necls_path)
-
-
-if False: # create necls set from concat sample
-    small_concat_ds = load_from_disk(small_concat_path)
-    small_concat_necls = remove_extra_cls_data(small_concat_ds, tokenizer)
-    small_concat_necls.save_to_disk(small_concat_necls_path)
-    
-
-if False: # create 5% user sample of concatenated data
-    concat_ds = load_from_disk(concat_ds_path)
-    print(concat_ds)
-    small_train = sample_users(concat_ds['train'])
-    print(small_train)
-    small_ds = DatasetDict()
-    small_ds['train'] = small_train
-    small_ds['validation'] = concat_ds['validation'] # no need to sample for val set
-    small_ds.save_to_disk(small_concat_path)
-
-
-if False: # chunk necls concat data
-    concat_ds_necls = load_from_disk(concat_necls_path)
-    describe_lens(concat_ds_necls)
-    chunked_ds_necls = chunk_data(tokenizer, concat_ds_necls, block_size, multiple_rows)
-    describe_lens(chunked_ds_necls)
-    chunked_ds = load_from_disk(chunked_path)
-    describe_lens(chunked_ds)
-
-if False: # sample 5% of users from chunked ds and save
-    chunked_ds = load_from_disk(chunked_path)
-    small_train = sample_users(chunked_ds['train'])
-    small_val = sample_users(chunked_ds['validation'])
-
-    small_ds = DatasetDict()
-    small_ds['train'] = small_train
-    small_ds['validation'] = chunked_ds['validation'] # no need to sample for val set
-
-    small_ds.save_to_disk(small_chunked_path)
-
-if False: # remove extra cls from chunked data
-    small_ds = load_from_disk(small_chunked_path)
-    describe_lens(small_ds['train'].to_pandas())
-    # necls = no extra cls
-    small_ds_necls = remove_extra_cls_data(small_ds, tokenizer)
-    print('tokens removed')
-    describe_lens(small_ds_necls['train'].to_pandas())
-
-
-
-if False: # remove extra cls from concat and save
-    train_concat_df = pd.read_pickle(train_concat_path)
-    val_concat_df = pd.read_pickle(val_concat_path)
-    concat_ds = df_to_ds(train_concat_df, val_concat_df)
-    concat_ds.save_to_disk(concat_ds_path)
-    concat_ds_necls = remove_extra_cls_data(concat_ds, tokenizer)
-    describe_lens(concat_ds_necls['train'].to_pandas())
-    concat_ds_necls.save_to_disk(concat_necls_path)
-
-if False: # no tokenize, no filter, concat, chunk one row
-    tokenized_ds = load_from_disk(tokenized_path)
-    describe_lens(tokenized_ds['train'].to_pandas(), user=True)
-
-    train_concat_df = concat_df('train', tokenized_ds['train'], concat_path)
-    val_concat_df = concat_df('validation', tokenized_ds['validation'], concat_path)
-
-    describe_lens(train_concat_df, user=False)
-    chunked_ds = chunk_data(tokenizer, train_concat_df, val_concat_df, block_size, multiple_rows)
-
-    print("data chunked, saving data...")
-    chunked_ds.save_to_disk(chunked_path)
-    print(f"data saved for block size {block_size}")
-
-
-if False:
-
-    if not tokenized:
-        untokenized_ds = load_from_disk(untokenized_path)
-        tokenized_ds = tokenize_data(tokenizer, untokenized_ds, tokenized_path)
-    elif not filtered:
-        tokenized_ds = load_from_disk(tokenized_path)
-        filtered_ds = filter_ds(tokenized_ds, block_size, filtered_path)
-    elif not concat:
-        filtered_ds = load_from_disk(filtered_path)
-        # concatenates and changes to pandas df
-        train_concat_df = get_concat_df(block_size, filtered_ds['train'], train_concat_path)
-        val_concat_df = get_concat_df(block_size, filtered_ds['validation'], val_concat_path)
-    else:
-        train_concat_df = pd.read_pickle(concat_path + 'train')
-        val_concat_df = pd.read_pickle(concat_path + 'validation')
-
-
-    # chunks and changes from pandas dfs to one HF DatasetDict
-    describe_lens(train_concat_df)
-    chunked_ds = chunk_data(tokenizer, train_concat_df, val_concat_df, block_size, multiple_rows)
-
-
