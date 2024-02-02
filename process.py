@@ -452,7 +452,16 @@ if multiple_rows:
 
 if True:
     concat_ds = load_from_disk(concat_path)
-    separate_blogs_ud(concat_ds); exit()
+    chunked_ds = chunk_data(tokenizer, concat_ds, block_size, prune=True)
+    chunked_ds = remove_short_docs(chunked_ds, 500)
+    describe_lens(chunked_ds)
+
+
+if False: # lens of blogs and UD
+    ds = load_from_disk(split_path)
+    blogs_ds, ud_ds = separate_blogs_ud(ds)
+    describe_lens(blogs_ds)
+    describe_lens(ud_ds)
 
 
 if False: # load ud and blogs and check user ids

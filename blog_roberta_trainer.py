@@ -11,11 +11,15 @@ from transformers import DataCollatorForLanguageModeling
 from transformers import Trainer
 from transformers import EarlyStoppingCallback
 
+import wandb
+
 import torch
 import pandas as pd
+import numpy as np
 import os
 import time
 import subprocess as sp
+import copy
 
 
 def sample_decode(ds, tokenizer, split='train', n=5):
@@ -40,16 +44,27 @@ def describe_lens(ds, split='train', user=False):
         print(describe(df['input_ids'].str.len()))
 
 
-def train(data_path, model_path, batch_size, block_size, grad_acc=1):
+class TrainParams: # all args for train() in one place
+    def __init__(self, data_path, model_path, run_name, pos_embd_strat, lr, attn_dropout, weight_decay):
+        self.data_path=data_path
+        self.model_path=model_path
+        self.run_name=run_name
+        self.pos_embd_strat=pos_embd_strat
+        self.lr=lr
+        self.attn_dropout=attn_dropout
+        self.weight_decay=weight_decay
+
+
+def train(params: TrainParams):
 
     # load saved dataset
     print("loading dataset...")
-    ds = load_from_disk(data_path)
+    ds = load_from_disk(params.data_path)
 
     # tokenizer
     tokenizer = AutoTokenizer.from_pretrained("roberta-base")
 
-    # load config and model
+    # config
     config_dict = {
             'vocab_size' : 50265, # number of total tokens allowed
             'num_hidden_layers' : 6, # number of hidden RobertaLayers in a RobertaEncoder
@@ -57,10 +72,10 @@ def train(data_path, model_path, batch_size, block_size, grad_acc=1):
             'hidden_size' : 768, # dimension of hidden layers
             'intermediate_size' : 3072, # dimension of feedfoward layer in encoder
             'max_position_embeddings' : 514, # max seq. length the model could ever have
-            'new_max_position_embeddings' : block_size+2, # max seq. length the model could ever have
+            'new_max_position_embeddings' : 4098, # max seq. length the model could ever have
             'hidden_act' : "gelu", # nonlinearity in the encoder and pooler
             'hidden_dropout_prob' : 0.1, # dropout probability for fully conn. layers
-            'attention_probs_dropout_prob' : 0.1, # dropout in attn layer
+            'attention_probs_dropout_prob' : params.attn_dropout, # dropout in attn layer
             'type_vocab_size' : 1, # for 'token_type_ids' column
             'initializer_range' : 0.02, # stdev for initializing weight matrices
             'layer_norm_eps' : 1e-05, # epsilon in layer norm
@@ -74,89 +89,108 @@ def train(data_path, model_path, batch_size, block_size, grad_acc=1):
             'classifier_dropout' : 0, # dropout rate for classification head
             } 
     roberta_config = RobertaConfig(**config_dict)
-    distil_model = AutoModelForMaskedLM.from_pretrained("distilroberta-base",
+
+    # model
+    model = AutoModelForMaskedLM.from_pretrained("distilroberta-base",
             config=roberta_config, ignore_mismatched_sizes=True)
     # expand positional embds with custom method in modeling_roberta.py
-    distil_model.expand_embds(roberta_config.new_max_position_embeddings)
+    model.expand_embds(roberta_config.new_max_position_embeddings, params.pos_embd_strat)
     
 
-    # training arguments
+    # args
     training_args = TrainingArguments(
-        output_dir = model_path,
+        output_dir = params.model_path,
         overwrite_output_dir=True,
         logging_strategy="steps",
         logging_steps=500,
         save_strategy="epoch",
         evaluation_strategy="epoch",
-        gradient_accumulation_steps=grad_acc,
+        gradient_accumulation_steps=1,
         warmup_ratio=0.02,
         num_train_epochs=50,
-        per_device_train_batch_size=batch_size,
+        learning_rate=params.lr,
+        weight_decay=params.weight_decay,
+        per_device_train_batch_size=1,
         save_steps=5000,
         save_total_limit=2,
         prediction_loss_only=False,
         metric_for_best_model='eval_loss',
         load_best_model_at_end=True,
         greater_is_better=False,
+        run_name=params.run_name,
+        report_to="wandb",
     )
 
     # data collator - performs batching and masking (i think)
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=True, mlm_probability=0.15)
 
     # create callback for early stopping
-    # early_stop = EarlyStoppingCallback(early_stopping_patience=3)
+    early_stop = EarlyStoppingCallback(early_stopping_patience=5)
 
     # instantiate trainer
     trainer = Trainer(
-        model=distil_model,
+        model=model,
         args=training_args,
         train_dataset=ds['train'],
         eval_dataset=ds['validation'],
-        data_collator = data_collator,
-        # callbacks=[early_stop],
+        data_collator=data_collator,
+        callbacks=[early_stop],
     )
     
     # train and save
-    trainer.train()
+    train_result = trainer.train()
+    eval_result = trainer.evaluate()
     trainer.save_model()
+    wandb.finish()
 
 
 # method to help pick a free GPU
-def get_gpu_memory():
+def pick_gpu():
     command = "nvidia-smi --query-gpu=memory.free --format=csv"
     memory_free_info = sp.check_output(command.split()).decode('ascii').split('\n')[:-1][1:]
     memory_free_values = [int(x.split()[0]) for i, x in enumerate(memory_free_info)]
-    return memory_free_values
+
+    for j in range(len(memory_free_values)):
+        if memory_free_values[j] == 48676:
+            print(f"using GPU {j}")
+            os.environ["CUDA_VISIBLE_DEVICES"] = str(j)
+            break
 
 
 def main():
     base_data_path = "/cronus_data/ssmith/data/blogsUD/"
     base_model_path = "/cronus_data/ssmith/models/blogsUD/"
-    data_path_1 = base_data_path + "sample_chunked_dsep_4096"
-    data_path_2 = base_data_path + "sample_chunked_4096"
-    model_path_1 = base_model_path + "sepsep_model"
-    model_path_2 = base_model_path + "sepbos_model"
+    dsep_run_name = "dsep_model"
+    non_dsep_run_name = "non_dsep_model"
 
-    data_paths = [data_path_1, data_path_2]
-    model_paths = [model_path_1, model_path_2]
-    batch_sizes = [1, 1]
-    block_sizes = [4096, 4096]
-    grad_accs = [1, 1]
+    dsep_train_params = TrainParams(
+        data_path=base_data_path + "sample_chunked_dsep_4096",
+        model_path=base_model_path + dsep_run_name,
+        run_name=dsep_run_name,
+        pos_embd_strat="load_repeat",
+        lr=1.3e-4,
+        attn_dropout=0.105,
+        weight_decay=7e-3,
+    )
+    non_dsep_train_params = TrainParams(
+        data_path=base_data_path + "sample_chunked_4096",
+        model_path=base_model_path + non_dsep_run_name,
+        run_name=non_dsep_run_name,
+        pos_embd_strat="load_repeat",
+        lr=1.3e-4,
+        attn_dropout=0.105,
+        weight_decay=7e-3,
+    )
 
-    mems = get_gpu_memory() # ex: [6848, 48676, 48676, 48676]
-    for j in range(len(mems)): # pick an available GPU
-        if mems[j] == 48676:
-            print(f"using GPU {j}")
-            os.environ["CUDA_VISIBLE_DEVICES"] = str(j)
-            break
+    # set wandb project
+    os.environ["WANDB_PROJECT"] = "dsep_experiment"
+
+    # pick GPU with memory available
+    pick_gpu()
+
     # train
-    for i in range(len(data_paths)):
-        train(data_path=data_paths[i],
-                model_path=model_paths[i],
-                batch_size=batch_sizes[i],
-                block_size=block_sizes[i],
-                grad_acc=grad_accs[i],
-        )
+    for train_params in [dsep_train_params, non_dsep_train_params]:
+        train(train_params)
         print("\n\n------\n\n------\n\n")
         time.sleep(60)
 

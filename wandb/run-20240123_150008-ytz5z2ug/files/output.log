@@ -1,9 +1,0 @@
-
-  0%|                                                                                                                                                                                             | 0/4 [00:00<?, ?it/s]You're using a RobertaTokenizerFast tokenizer. Please note that with a fast tokenizer, using the `__call__` method is faster than using a method to encode the text followed by a call to the `pad` method to get a padded encoding.
-
-100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:04<00:00,  1.59it/s]Checkpoint destination directory /cronus_data/ssmith/models/blogsUD/new_optuna_param_test_2/checkpoint-4 already exists and is non-empty.Saving will proceed but saved results may be invalid.
-{'eval_loss': 10.736603736877441, 'eval_runtime': 0.9399, 'eval_samples_per_second': 4.256, 'eval_steps_per_second': 1.064, 'epoch': 1.0}
-There were missing keys in the checkpoint model loaded: ['lm_head.decoder.weight', 'lm_head.decoder.bias'].
-100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:08<00:00,  2.01s/it]
-{'train_runtime': 10.1436, 'train_samples_per_second': 0.394, 'train_steps_per_second': 0.394, 'train_loss': 11.982095718383789, 'epoch': 1.0}
-TrainOutput(global_step=4, training_loss=11.982095718383789, metrics={'train_runtime': 10.1436, 'train_samples_per_second': 0.394, 'train_steps_per_second': 0.394, 'train_loss': 11.982095718383789, 'epoch': 1.0})
