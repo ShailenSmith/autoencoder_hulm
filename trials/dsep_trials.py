@@ -56,7 +56,7 @@ def run_trials(data_path, model_path, run_name, pos_embd_strat="load_repeat"):
     tokenizer = AutoTokenizer.from_pretrained("roberta-base")
 
     # args
-    training_args = TrainingArguments(
+    args = TrainingArguments(
         output_dir=model_path,
         overwrite_output_dir=True,
         logging_strategy="steps",
@@ -126,7 +126,7 @@ def run_trials(data_path, model_path, run_name, pos_embd_strat="load_repeat"):
         # trainer
         trainer = Trainer(
             model=model,
-            args=training_args,
+            args=args,
             train_dataset=ds['train'], #.select(np.arange(3)),
             eval_dataset=ds['dev'], #.select(np.arange(3)),
             data_collator = data_collator,
@@ -140,12 +140,12 @@ def run_trials(data_path, model_path, run_name, pos_embd_strat="load_repeat"):
     # sampler and study
     sampler = optuna.samplers.TPESampler(seed=42) 
     study = optuna.create_study(study_name='hyper-parameter-search', direction='minimize', sampler=sampler,
-                                pruner=HyperbandPruner(max_resource = training_args.num_train_epochs)) 
+                                pruner=HyperbandPruner(max_resource = args.num_train_epochs)) 
 
     # wandb callback and optimize 
     wandb_kwargs = {"project": os.environ["WANDB_PROJECT"]}
     wandbc = WeightsAndBiasesCallback(wandb_kwargs=wandb_kwargs, as_multirun=True)
-    study.optimize(func=lambda trial: objective(trial, training_args), n_trials=12, callbacks=[wandbc])  
+    study.optimize(func=lambda trial: objective(trial, args), n_trials=12, callbacks=[wandbc])  
 
     print(study.best_trial)
     wandb.finish()

@@ -170,7 +170,7 @@ class RobertaSelfAttention(nn.Module):
         self.key = nn.Linear(config.hidden_size, self.all_head_size)
         self.value = nn.Linear(config.hidden_size, self.all_head_size)
 
-        self.dropout = nn.Dropout(config.attention_probs_dropout_prob[0]) ### CHANGED: ADDED [0]
+        self.dropout = nn.Dropout(config.attention_probs_dropout_prob)
         self.position_embedding_type = position_embedding_type or getattr(
             config, "position_embedding_type", "absolute"
         )
@@ -1095,7 +1095,7 @@ class RobertaForMaskedLM(RobertaPreTrainedModel):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
-        sequence_output = outputs[0]
+        sequence_output = outputs[0] # RobertaEncoder[0][0], 
         prediction_scores = self.lm_head(sequence_output)
 
         masked_lm_loss = None
@@ -1117,7 +1117,7 @@ class RobertaForMaskedLM(RobertaPreTrainedModel):
         )
 
     ### ADDITION: expand embeddings method
-    def expand_embds(self, new_T, use_trained=True, repeat=False):
+    def expand_embds(self, new_T, use_trained, repeat):
         old_embds = self.roberta.embeddings.position_embeddings.weight
         old_T, C = old_embds.shape
         std = self.config.initializer_range

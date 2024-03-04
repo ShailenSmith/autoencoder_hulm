@@ -165,7 +165,7 @@ def chunk_multiple_rows(examples, tokenizer, block_size):
                     user_ids.append(user_id)
 
                     if last_doc_end == -1:
-                        print(input_ids, idx, begin, "Document greater than block_size present"); exit()
+                        print(tokenizer.decode(input_ids), idx, begin, "Document greater than block_size present"); exit()
                     if last_doc_end - begin > block_size:
                         print(input_ids, idx, begin, "Chunk bigger than block size"); exit()
 
@@ -182,11 +182,69 @@ def chunk_multiple_rows(examples, tokenizer, block_size):
     return {'user_id' : user_ids, 'input_ids' : text_chunks, 'attention_mask' : attn_mask_chunks}
 
 
-def chunk_data(tokenizer, ds, block_size, prune=False, multiple_rows=False):
+# breakup single document rows such that they fit into target context size
+def breakup(examples, tokenizer, block_size):
+    
+    bos_token = tokenizer.bos_token_id
+    eos_token = tokenizer.eos_token_id
+    user_ids = []
+    text_chunks = []
+    attn_mask_chunks = []
+
+    # lists that will make the new dataset at the end
+    batch_user_ids = examples['user_id']
+    batch_input_ids = examples['input_ids']
+    batch_attn_masks = examples['attention_mask']
+
+    for i in range(len(batch_user_ids)):
+        user_id = batch_user_ids[i]
+        input_ids = batch_input_ids[i]
+        attn_mask = batch_attn_masks[i]
+
+        if input_ids[len(input_ids)-1] != eos_token:
+            print(row, "doesn't end in </s>"); exit()
+        if input_ids[0] != tokenizer.bos_token_id:
+            print(row, "doesn't start with <s>"); exit()
+
+        input_ids = input_ids[1:len(input_ids)-1] # remove <s> and </s> tokens to be added back later
+        attn_mask_start_token, attn_mask_stop_token = attn_mask[0], attn_mask[len(input_ids)-1]
+        attn_mask = attn_mask[1:len(attn_mask)-1] # keep attn mask matching input ids
+        adj_block_size = block_size - 2 # account for missing 2 tokens from last two lines
+
+        if len(input_ids) > adj_block_size: # chunk longer blog posts into many pieces
+            num = len(input_ids) // adj_block_size # how many full new documents will be made
+            token_bounds = [(adj_block_size*(k), adj_block_size*(k+1)) for k in range(num)] + [(adj_block_size*num, len(input_ids))] # e.g. [(0, 510), (510, 1020), (1020, 1500)] for a 1500-token doc and 512 block_size
+            attn_mask_bounds = [(adj_block_size*(k), adj_block_size*(k+1)) for k in range(num)] + [(adj_block_size*num, len(attn_mask))] # same bounds for attn mask
+            for i in range(len(token_bounds)):
+                token_begin, token_end = token_bounds[i]
+                attn_mask_begin, attn_mask_end = attn_mask_bounds[i]
+
+                if user_id == "1171643" and False: # test user
+                    print(f"{i}th row: appending for ({token_begin}, {token_end})")
+                    print(tokenizer.decode([bos_token] + input_ids[token_begin:token_end] + [eos_token]))
+
+                # append
+                user_ids.append(user_id)
+                text_chunks.append([bos_token] + input_ids[token_begin:token_end] + [eos_token])
+                attn_mask_chunks.append([attn_mask_start_token] + attn_mask[attn_mask_begin:attn_mask_end] + [attn_mask_stop_token])
+        else: # the whole text for user can be added if it all fits inside block_size
+            user_ids.append(user_id)
+            text_chunks.append([bos_token] + input_ids + [eos_token])
+            attn_mask_chunks.append([attn_mask_start_token] + attn_mask + [attn_mask_stop_token])    
+    return {'user_id' : user_ids, 'input_ids' : text_chunks, 'attention_mask' : attn_mask_chunks}
+
+
+def chunk_data(tokenizer, ds, block_size, prune=False, multiple_rows=False, one_post=False):
     if prune == True and multiple_rows == True:
         print("Not implemented yet"); exit()
+    if one_post:
+        chunked_ds = ds.map(lambda rows: breakup(rows, tokenizer=tokenizer,
+            block_size=block_size), batched=True,
+            remove_columns=ds['train'].column_names) #, num_proc=4)
+        return chunked_ds
+    
     if multiple_rows: # multiple rows per user
-        chunked_ds = ds.map(lambda rows: chunk_mutiple_rows(rows, tokenizer=tokenizer,
+        chunked_ds = ds.map(lambda rows: chunk_multiple_rows(rows, tokenizer=tokenizer,
             block_size=block_size), batched=True,
             remove_columns=ds['train'].column_names) #, num_proc=4)
     else: # one row per user
@@ -228,7 +286,7 @@ def unchunk(examples, tokenizer):
     return {'user_id' : user_ids, 'input_ids' : text_chunks, 'attention_mask' : attn_mask_chunks}
 
 
-def unchunk_data(tokenizer, ds):
+def unchunk_data(ds, tokenizer):
     unchunked_ds = ds.map(lambda row: unchunk(row, tokenizer=tokenizer),
         batched=True, remove_columns=ds['train'].column_names)
     return unchunked_ds
@@ -269,13 +327,38 @@ def sample_users(ds, p=0.05):
     return small_ds
 
 
-def sample_decode(ds, n=5, split='train'):
+def sample_users_from_other_ds(ds, ref_ds):
+    target_user_ids = list(set(ref_ds['user_id']))
+    df = ds.to_pandas()
+    sample_ds = Dataset.from_pandas(df[df['user_id'].isin(target_user_ids)], preserve_index=False)
+    return sample_ds
+
+
+def sample_decode(ds, n=5, split='train',index_list=[]):
     df = ds[split].to_pandas()
-    for i in range(n):
+    if index_list == []:
+        index_list = np.arange(n)
+    for i in index_list:
         row = df.iloc[i]
         time.sleep(3)
         print(row[['user_id']], tokenizer.decode(row['input_ids']))
     print("\n\n\n\n")
+
+
+def decode_user(ds, from_index=True, user_id=4178076, user_index=803, split='train', n=5):
+    df = ds[split].to_pandas()
+    if from_index:
+        user_id = df['user_id'].unique()[user_index]
+    print(f"---- USER {user_id} ----")
+    print(type(df['user_id'].iloc[0]))
+    user_df = df[df['user_id'] == str(user_id)]
+    if len(user_df) == 0:
+        print(f"user {user_id} not found")
+    for i in range(min(len(user_df), n)):
+        row = user_df.iloc[i]
+        print(tokenizer.decode(row['input_ids']), f"{len(row['input_ids'])} tokens")
+        print('\n--\n')
+    return {'user_id' : user_id}
 
 
 def fixed_date_all_df(ds):
@@ -405,9 +488,12 @@ def describe(df):
     return base.reindex(["count", "mean", "std", "min", "1%", "25%", "50%", "75%", "99%", "max"])
 
 
-def describe_lens(ds, user=False, minmax=False):
-    # print(tokenized_user_blog_corpus)   
-    df = ds['train'].to_pandas()
+def describe_lens(ds, user=False, minmax=False, split='train'):
+    # print(tokenized_user_blog_corpus) 
+    if isinstance(ds, DatasetDict): # DatasetDict
+        df = ds[split].to_pandas()
+    else: # Dataset
+        df = ds.to_pandas()
 
     # print token sum
     print("total tokens: ", df['input_ids'].str.len().sum())
@@ -426,7 +512,6 @@ def describe_lens(ds, user=False, minmax=False):
 
 tokenizer = AutoTokenizer.from_pretrained("roberta-base")
 block_size = 4096
-multiple_rows = False
 
 blogs_path = "/cronus_data/ssmith/data/blog_corpus"
 ds4ud_csv_path = "/cronus_data/ssmith/data/raw_ds4ud_FB.csv"
@@ -441,16 +526,128 @@ concat_path = base_path + "concat_ds"
 concat_dsep_path = base_path + "concat_dsep"
 sample_concat_path = base_path + "concat_sample"
 sample_concat_dsep_path = base_path + "concat_sample_dsep"
-chunked_path = base_path + f"chunked_{str(block_size)}"
-sample_chunked_path = base_path + f"sample_chunked_{str(block_size)}"
+chunked_dsep_path = base_path + f"chunked_dsep_{str(block_size)}"
+chunked_docss_path = base_path + f"chunked_docss_{str(block_size)}"
+sample_chunked_docss_path = base_path + f"sample_chunked_docss_{str(block_size)}"
 sample_chunked_dsep_path = base_path + f"sample_chunked_dsep_{str(block_size)}"
 unchunked_path = base_path + f"unchunked_{str(block_size)}"
+unchunked_512_path = base_path + f"unchunked_512"
+unchunked_512_sample_path = base_path + f"unchunked_512_sample"
 
-if multiple_rows:
-    chunked_path += "_mr"
+
+if False: # remove rows of 5 tokens or less
+    ds = load_from_disk(unchunked_512_sample_path)
+    describe_lens(ds)
+    new_ds = remove_short_docs(ds, 5)
+    describe_lens(new_ds)
+    new_ds.save_to_disk(unchunked_512_sample_path + "_NEW")
 
 
-if True: # rename validation to dev
+if False: # sample from unchunked with same users as the dsep sample
+    ds = load_from_disk(unchunked_512_path)
+    ref_ds = load_from_disk(sample_chunked_dsep_path)
+    sample_ds_train = sample_users_from_other_ds(ds['train'], ref_ds['train'])
+    describe_lens(ref_ds); describe_lens(sample_ds_train)
+    sample_ds = DatasetDict()
+    sample_ds['train'] = sample_ds_train
+    for key in ds.keys():
+        if key != 'train':
+            sample_ds[key] = ds[key]
+    print(sample_ds)
+    sample_ds.save_to_disk(unchunked_512_sample_path)
+    exit()
+
+
+if False: # check out attn mask
+    unchunked_ds = load_from_disk(unchunked_512_path)
+    row = unchunked_ds['train'].to_pandas().iloc[0]
+    print(type(row['attention_mask']))
+    exit()
+
+
+if False: # find long posts in unchunked
+    ds = load_from_disk(unchunked_path)
+    df = ds['train'].to_pandas()
+    df = df[df['input_ids'].str.len() >= 4000]
+    print(df.iloc[0]['user_id']); exit()
+
+
+if False: # send unchunked posts onto multiple rows if they're over 512
+    ds = load_from_disk(unchunked_path)
+    user_id = decode_user(ds, from_index=False, user_id=1171643, split='train', n=5)['user_id']
+    new_ds = chunk_data(tokenizer, ds, 512, one_post=True)
+    decode_user(new_ds, from_index=False, user_id=1171643, split='train', n=15)
+    describe_lens(ds)
+    describe_lens(new_ds)
+    new_ds.save_to_disk(unchunked_512_path)
+    exit()
+
+
+
+if False: # unchunk full chunked
+    ds = load_from_disk(chunked_docss_path)
+    dsep_ds = load_from_disk(chunked_dsep_path)
+    decode_user(dsep_ds, user_index=803)
+    unchunked_ds = unchunk_data(ds, tokenizer)
+    decode_user(unchunked_ds, user_index=803)
+    describe_lens(dsep_ds)
+    describe_lens(unchunked_ds)
+    unchunked_ds.save_to_disk(unchunked_path)
+    exit()
+
+
+if False: # docss chunk from docss concat
+    concat_ds = load_from_disk(concat_path)
+    describe_lens(concat_ds)
+    chunked_ds = chunk_data(tokenizer, concat_ds, block_size, prune=True)
+    chunked_ds = remove_short_docs(chunked_ds, 500)
+    describe_lens(chunked_ds)
+    chunked_ds.save_to_disk(chunked_docss_path)
+
+
+
+if False: # dsep chunk from dsep concat
+    concat_ds = load_from_disk(concat_dsep_path)
+    describe_lens(concat_ds)
+    chunked_ds = chunk_data(tokenizer, concat_ds, block_size, prune=True)
+    chunked_ds = remove_short_docs(chunked_ds, 500)
+    describe_lens(chunked_ds)
+    chunked_ds.save_to_disk(chunked_dsep_path)
+
+
+if False: # concat to dsep
+    ds = load_from_disk(concat_path)
+    describe_lens(ds)
+    necls_ds = remove_extra_cls_data(ds, tokenizer)
+    describe_lens(necls_ds)
+    dsep_ds = add_sep(necls_ds, tokenizer)
+    describe_lens(dsep_ds)
+    dsep_ds.save_to_disk(concat_dsep_path)
+    exit()
+
+
+if False: # send unchunked posts onto multiple rows if they're over 512
+    ds = load_from_disk(unchunked_path)
+    describe_lens(ds)
+    # user_id = decode_user(ds, from_index=True, user_index=778, split='train', n=2)['user_id']
+    new_ds = chunk_data(tokenizer, ds, 512, one_post=True)
+    describe_lens(new_ds)
+    # decode_user(new_ds, from_index=False, user_id=user_id, split='train', n=10)
+
+
+if False: # unchunk a sample
+    ds = load_from_disk(sample_chunked_docss_path)
+    describe_lens(ds)
+    # sample_decode(ds, index_list=[100, 200, 300])
+    unchunked_ds = unchunk_data(ds, tokenizer)
+    sample_decode(unchunked_ds, index_list=[1000, 1001, 1002])
+    describe_lens(unchunked_ds)
+    unchunked_ds.save_to_disk(unchunked_path)
+    # unchunked_ds = chunk_data(tokenizer, unchunked_ds, 512, multiple_rows=True)
+    # describe_lens(unchunked_ds)
+    # sample_decode(unchunked_ds, index_list=[1000, 1001, 1002])
+
+if False: # rename validation to dev
     for path in [sample_concat_path, sample_concat_dsep_path, sample_chunked_path, sample_chunked_dsep_path]:
         ds = load_from_disk(path)
         print(ds)
@@ -481,9 +678,7 @@ if False: # load ud and blogs and check user ids
     blogs_ds = load_from_disk(blogs_path)
     print(pd.Series(ud_ds['train'].to_pandas()['user_id'].apply(int).unique()).describe())
     print(pd.Series(blogs_ds['train'].to_pandas()['user_id'].apply(int).unique()).describe())
-    exit()
-    
-    
+    exit()  
 
 if False:
     sample_chunked = load_from_disk(sample_chunked_path)

@@ -46,7 +46,24 @@ def describe_lens(ds, split='train', user=False):
         print(describe(df['input_ids'].str.len()))
 
 
-def run_trials(data_path, model_path, run_name, pos_embd_strat="load_512"):
+class MyPrunerCallback(TrainerCallback):
+
+    def __init__(self, trial):
+        super().__init__()
+        self.trial = trial
+
+    def on_evaluate(self, args, state, control, **kwargs):
+        current_eval_loss = kwargs['metrics']['eval_loss']
+        self.trial.report(current_eval_loss, state.epoch)
+
+        if self.trial.should_prune():
+            raise optuna.TrialPruned() # will print a message itself
+        else:
+            print(f"Epoch {state.epoch}: trial not pruned with eval loss {current_eval_loss}")
+
+
+
+def run_trials(data_path, model_path, run_name):
 
     # load saved dataset
     print("loading dataset...")
@@ -63,10 +80,10 @@ def run_trials(data_path, model_path, run_name, pos_embd_strat="load_512"):
         logging_steps=500,
         save_strategy="epoch",
         evaluation_strategy="epoch",
-        gradient_accumulation_steps=1,
+        gradient_accumulation_steps=1, # updated later
         # warmup_ratio=0.02, # warmup ratio defined in objective() function
-        num_train_epochs=20,
-        per_device_train_batch_size=1,
+        num_train_epochs=40,
+        per_device_train_batch_size=64,
         save_steps=5000,
         save_total_limit=2,
         prediction_loss_only=False,
@@ -78,6 +95,7 @@ def run_trials(data_path, model_path, run_name, pos_embd_strat="load_512"):
 
     
     def objective(trial: optuna.Trial, args: TrainingArguments):
+        
         # config
         config_dict = {
             'vocab_size' : 50265, # number of total tokens allowed
@@ -86,7 +104,7 @@ def run_trials(data_path, model_path, run_name, pos_embd_strat="load_512"):
             'hidden_size' : 768, # dimension of hidden layers
             'intermediate_size' : 3072, # dimension of feedfoward layer in encoder
             'max_position_embeddings' : 514, # max seq. length the model could ever have
-            'new_max_position_embeddings' : 4098, # max seq. length the model could ever have
+            'new_max_position_embeddings' : 514, # max seq. length the model could ever have
             'hidden_act' : "gelu", # nonlinearity in the encoder and pooler
             'hidden_dropout_prob' : 0.1, # dropout probability for fully conn. layers
             'attention_probs_dropout_prob' : 0.1,
@@ -106,19 +124,14 @@ def run_trials(data_path, model_path, run_name, pos_embd_strat="load_512"):
         # args
         args.run_name=f"{run_name}_{trial.number}"
         args.output_dir = f"{model_path}/{args.run_name}"
-        args.warmup_ratio=1/args.num_train_epochs # warmup lr for 1 epoch
-        args.learning_rate=trial.suggest_float("learning_rate", low=3e-5, high=3e-4, log=True)
+        args.warmup_ratio=0.06
+        args.gradient_accumulation_steps = trial.suggest_categorical("grad_acc", [2, 4, 8, 16, 32]) # effective bsz is 64 * grad_acc 
+        args.learning_rate=trial.suggest_float("learning_rate", low=1e-5, high=5e-4, log=True)
         args.weight_decay=trial.suggest_float("weight_decay", low=1e-3, high=1e-2, log=False)
         
         # model
         model = AutoModelForMaskedLM.from_pretrained("distilroberta-base",
             config=roberta_config, ignore_mismatched_sizes=True)
-        use_trained = False if pos_embd_strat == "no_load" else True
-        repeat = True if pos_embd_strat == "load_repeat" else False
-        model.expand_embds(roberta_config.new_max_position_embeddings, # expand positional embds with custom method in modeling_roberta.py
-                use_trained=use_trained, repeat=repeat)
-        print("pos embds stdev: ",
-                torch.std(model.roberta.embeddings.position_embeddings.weight))
 
         # data collator - performs batching and masking (i think)
         data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=True, mlm_probability=0.15)
@@ -127,31 +140,32 @@ def run_trials(data_path, model_path, run_name, pos_embd_strat="load_512"):
         trainer = Trainer(
             model=model,
             args=args,
-            train_dataset=ds['train'], #.select(np.arange(3)),
-            eval_dataset=ds['dev'], #.select(np.arange(3)),
+            train_dataset=ds['train'],
+            eval_dataset=ds['dev'],
             data_collator = data_collator,
+            callbacks=[MyPrunerCallback(trial)]
         )
-
+ 
         # train and evaluate
         train_result = trainer.train()
         eval_result = trainer.evaluate()
         return eval_result['eval_loss']
 
     # sampler and study
-    sampler = optuna.samplers.TPESampler() 
+    sampler = optuna.samplers.TPESampler(seed=42) 
     study = optuna.create_study(study_name='hyper-parameter-search', direction='minimize', sampler=sampler,
                                 pruner=HyperbandPruner(max_resource = args.num_train_epochs)) 
 
     # wandb callback and optimize 
     wandb_kwargs = {"project": os.environ["WANDB_PROJECT"]}
     wandbc = WeightsAndBiasesCallback(wandb_kwargs=wandb_kwargs, as_multirun=True)
-    study.optimize(func=lambda trial: objective(trial, args), n_trials=12, callbacks=[wandbc])  
+    study.optimize(func=lambda trial: objective(trial, args), n_trials=50, callbacks=[wandbc])  
 
     print(study.best_trial)
     wandb.finish()
 
 
-# method to pick a free GPU
+# method to help pick a free GPU
 def pick_gpu():
     command = "nvidia-smi --query-gpu=memory.free --format=csv"
     memory_free_info = sp.check_output(command.split()).decode('ascii').split('\n')[:-1][1:]
@@ -162,33 +176,33 @@ def pick_gpu():
             print(f"using GPU {j}")
             os.environ["CUDA_VISIBLE_DEVICES"] = str(j)
             break
-            
+
 
 # ------------------- Main method ---------------------------
 
 base_data_path = "/cronus_data/ssmith/data/blogsUD/"
-base_model_path = "/cronus_data/ssmith/models/blogsUD/"
-sample_chunked_path = base_data_path + "sample_chunked_4096"
+base_model_path = "/cronus_data/ssmith/models/blogsUD/trials/"
+sample_chunked_path = base_data_path + "sample_chunked_docss_4096"
 sample_chunked_dsep_path = base_data_path + "sample_chunked_dsep_4096"
-no_load_model_path = base_model_path + "no_load_trials"
-load_repeat_model_path = base_model_path + "load_repeat_trials"
-load_512_model_path = base_model_path + "load_512_trials"
+unchunked_512_path = base_data_path + f"unchunked_512_sample"
+control_model_path = base_model_path + "control_trials"
 
-os.environ["WANDB_PROJECT"] = "load_512_trials"
+os.environ["WANDB_PROJECT"] = "control_trials"
 
-data_paths = [sample_chunked_dsep_path, sample_chunked_dsep_path, sample_chunked_dsep_path]
-model_paths = [no_load_model_path, load_repeat_model_path, load_512_model_path]
-pos_embd_strats = ["no_load", "load_repeat", "load_512"] # "load_repeat", "load_512", or "no_load"
-run_names = ["no_load_trials", "load_repeat_trials", "load_512_trials"]
+
+if True:
+    data_paths = [unchunked_512_path]
+    model_paths = [control_model_path]
+    run_names = ["control_trials"]
 
 pick_gpu() # pick an open GPU to use to train
 
 # run trials
-for i in [2]:
+for i in [0]:
     run_trials(data_path=data_paths[i],
             model_path=model_paths[i],
-            pos_embd_strat = pos_embd_strats[i],
             run_name = run_names[i],
     )
     print("\n\n------\n\n------\n\n")
     time.sleep(60)
+

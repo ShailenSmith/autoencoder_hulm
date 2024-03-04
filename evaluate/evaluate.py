@@ -68,7 +68,7 @@ def separate_blogs_ud(ds): # deconstruct ds into (blogs_ds, ud_ds)
     return blogs_ds, ud_ds
 
 
-def evaluate(data_path, model_path, run_name):
+def evaluate(data_path, model_path, run_name, predict=False):
 
     # load saved dataset
     print("loading dataset...")
@@ -88,6 +88,9 @@ def evaluate(data_path, model_path, run_name):
     training_args = TrainingArguments(
         output_dir=model_path + "_eval",
         overwrite_output_dir=False,
+        per_device_train_batch_size=1,
+        per_device_eval_batch_size=1,
+        eval_accumulation_steps=15,
         evaluation_strategy="epoch",
         report_to="wandb",
     )
@@ -124,21 +127,37 @@ def evaluate(data_path, model_path, run_name):
 
     eval_results = {}
 
-    for domain, ds in dses.items():
-        for split in ["dev", "test"]:
-            run_name_suffix = f"_{domain}_{split}"
-            print(f" --- {run_name} ---")
-            training_args.run_name = run_name + run_name_suffix
-            trainer = Trainer(
-                        model=model,
-                        args=training_args,
-                        eval_dataset=ds[split], #.select(np.arange(3)),
-                        data_collator = data_collator,
-                    )
-            # evaluate
-            eval_results[training_args.run_name] = trainer.evaluate()
-            wandb.log(eval_results[training_args.run_name])
-        wandb.finish()
+    if predict:
+        training_args.run_name = run_name + "_preds"
+        trainer = Trainer(
+                            model=model,
+                            args=training_args,
+                            eval_dataset=ds['test'],
+                            data_collator = data_collator,
+                        )
+        # predict
+        preds_path = f'/chronos_data/ssmith/data/blogsUD/{run_name}_preds.pkl'
+        with open(preds_path, 'wb'):
+                pass
+        pred_results = trainer.predict(ds['test'])
+        with open(preds_path, 'wb') as f:
+            pickle.dump(pred_results, f)
+    else:
+        for domain, ds in dses.items():
+            for split in ["dev", "test"]:
+                run_name_suffix = f"_{domain}_{split}"
+                print(f" --- {run_name} ---")
+                training_args.run_name = run_name + run_name_suffix
+                trainer = Trainer(
+                            model=model,
+                            args=training_args,
+                            eval_dataset=ds[split], #.select(np.arange(3)),
+                            data_collator = data_collator,
+                        )
+                # evaluate
+                eval_results[training_args.run_name] = trainer.evaluate()
+                wandb.log(eval_results[training_args.run_name])
+                wandb.finish()
 
 
 # method to help pick a free GPU
@@ -157,14 +176,14 @@ def pick_gpu():
 # ------------------- Main method ---------------------------
 
 base_data_path = "/cronus_data/ssmith/data/blogsUD/"
-base_model_path = "/cronus_data/ssmith/models/blogsUD/"
-sample_chunked_docss_path = base_data_path + "sample_chunked_docss_4096"
+base_model_path = "/cronus_data/ssmith/models/blogsUD/trainer/"
 sample_chunked_dsep_path = base_data_path + "sample_chunked_dsep_4096"
-dsep_model_path = base_model_path + "dsep_model/checkpoint-45550"
-docss_model_path = base_model_path + "docss_model/checkpoint-45550"
+sample_chunked_docss_path = base_data_path + "sample_chunked_docss_4096"
+dsep_model_path = base_model_path + "dsep_model/checkpoint-40995"
+docss_model_path = base_model_path + "docss_model/checkpoint-26419"
 wandb_test_path = base_model_path + "steps_test"
 
-os.environ["WANDB_PROJECT"] = "special_token_evaluations"
+os.environ["WANDB_PROJECT"] = "special_token_predictions"
 
 if True:
     data_paths = [sample_chunked_dsep_path, sample_chunked_docss_path]
@@ -178,6 +197,7 @@ for i in range(len(data_paths)):
     evaluate(data_path=data_paths[i],
             model_path=model_paths[i],
             run_name=run_names[i],
+            predict=True,
     )
     print("\n\n------\n\n------\n\n")
     time.sleep(60)
