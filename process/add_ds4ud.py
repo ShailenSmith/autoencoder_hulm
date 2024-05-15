@@ -42,7 +42,7 @@ val_ds = Dataset.from_pandas(val_df, preserve_index=False)
 ds = DatasetDict()
 ds['train'] = train_ds
 ds['validation'] = val_ds
-if False:
+if False: # set to true if you want to save ds4ud corpus as HF Dataset separately as well
     ds.save_to_disk("/cronus_data/ssmith/data/ds4ud_corpus")
 
 # add blogs
@@ -51,7 +51,7 @@ blogs = blogs.remove_columns(['gender', 'age', 'horoscope', 'job'])
 blogs_train = blogs['train']
 print(blogs_train.to_pandas()['user_id'].describe()); exit()
 
-
+# lines 55-76 ensure that the features of blogs and ds4ud datasets are of the same type before calling concatenate_datasets()
 def make_user_str(row):
     row['user_id'] = str(row['user_id'])
 
@@ -89,5 +89,5 @@ val_users = combined_val_ds['user_id']
 both_users = set(train_users).intersection(set(val_users))
 print(len(both_users)); exit()
 
-combined_ds.save_to_disk("/cronus_data/ssmith/data/blogs_ud/blog_ds4ud_corpus")
+combined_ds.save_to_disk("/cronus_data/ssmith/data/blogsUD/blogsUD_corpus")
 

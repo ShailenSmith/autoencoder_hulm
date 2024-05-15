@@ -22,6 +22,7 @@ import copy
 import logging
 import json
 import numpy as np
+import sys
 
 
 def sample_decode(ds, tokenizer, split='train', n=5):
@@ -76,7 +77,7 @@ def run_trials(data_path, model_path, run_name, pos_embd_strat="load_512"):
         report_to="wandb",
     )
 
-    
+    wd_to_loss = {}
     def objective(trial: optuna.Trial, args: TrainingArguments):
         # config
         config_dict = {
@@ -104,11 +105,18 @@ def run_trials(data_path, model_path, run_name, pos_embd_strat="load_512"):
         roberta_config = RobertaConfig(**config_dict)
 
         # args
-        args.run_name=f"{run_name}_{trial.number}"
+        args.run_name=f"{run_name}_{trial.number+21}"
         args.output_dir = f"{model_path}/{args.run_name}"
         args.warmup_ratio=1/args.num_train_epochs # warmup lr for 1 epoch
-        args.learning_rate=trial.suggest_float("learning_rate", low=3e-5, high=3e-4, log=True)
-        args.weight_decay=trial.suggest_float("weight_decay", low=1e-3, high=1e-2, log=False)
+        args.learning_rate=3e-5 # trial.suggest_float("learning_rate", low=3e-5, high=3e-4, log=True)
+        args.weight_decay=trial.suggest_categorical("weight_decay", [2e-2, 4e-2, 6e-2, 8e-2, 0.1])
+
+        # do not run trial if weight decay is already used
+        add_wd = False
+        if args.weight_decay in wd_to_loss.keys():
+            return wd_to_loss[args.weight_decay]
+        else:
+            add_wd = True
         
         # model
         model = AutoModelForMaskedLM.from_pretrained("distilroberta-base",
@@ -135,6 +143,8 @@ def run_trials(data_path, model_path, run_name, pos_embd_strat="load_512"):
         # train and evaluate
         train_result = trainer.train()
         eval_result = trainer.evaluate()
+        if add_wd:
+            wd_to_loss[args.weight_decay] = eval_result['eval_loss']
         return eval_result['eval_loss']
 
     # sampler and study
@@ -145,23 +155,40 @@ def run_trials(data_path, model_path, run_name, pos_embd_strat="load_512"):
     # wandb callback and optimize 
     wandb_kwargs = {"project": os.environ["WANDB_PROJECT"]}
     wandbc = WeightsAndBiasesCallback(wandb_kwargs=wandb_kwargs, as_multirun=True)
-    study.optimize(func=lambda trial: objective(trial, args), n_trials=12, callbacks=[wandbc])  
+    study.optimize(func=lambda trial: objective(trial, args), n_trials=20, callbacks=[wandbc])  
 
     print(study.best_trial)
     wandb.finish()
 
 
-# method to pick a free GPU
-def pick_gpu():
-    command = "nvidia-smi --query-gpu=memory.free --format=csv"
-    memory_free_info = sp.check_output(command.split()).decode('ascii').split('\n')[:-1][1:]
-    memory_free_values = [int(x.split()[0]) for i, x in enumerate(memory_free_info)]
+# method to help pick a free GPU
+def pick_gpu(wait_one_gpu=False, gpu_idx=0):
+    if wait_one_gpu:
+        while True:
+            command = "nvidia-smi --query-gpu=memory.free --format=csv"
+            memory_free_info = sp.check_output(command.split()).decode('ascii').split('\n')[:-1][1:]
+            memory_free_values = [int(x.split()[0]) for i, x in enumerate(memory_free_info)]
+            if memory_free_values[gpu_idx] == 48676:
+                print(f"using GPU {gpu_idx}")
+                os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_idx)
+                return
+            print(f"GPU {gpu_idx} not available, sleeping for 3 minutes")
+            time.sleep(180)
+    else:
+        while True:
+            command = "nvidia-smi --query-gpu=memory.free --format=csv"
+            memory_free_info = sp.check_output(command.split()).decode('ascii').split('\n')[:-1][1:]
+            memory_free_values = [int(x.split()[0]) for i, x in enumerate(memory_free_info)]
+            for idx in range(len(memory_free_values)):
+                if memory_free_values[idx] == 48676:
+                    print(f"using GPU {idx}")
+                    os.environ["CUDA_VISIBLE_DEVICES"] = str(idx)
+                    return
+            print(f"GPU {gpu_idx} not available, sleeping for 60 minutes")
+            time.sleep(1800)
+            print("30 minutes left")
+            time.sleep(1800)
 
-    for j in range(len(memory_free_values)):
-        if memory_free_values[j] == 48676:
-            print(f"using GPU {j}")
-            os.environ["CUDA_VISIBLE_DEVICES"] = str(j)
-            break
             
 
 # ------------------- Main method ---------------------------
@@ -174,17 +201,19 @@ no_load_model_path = base_model_path + "no_load_trials"
 load_repeat_model_path = base_model_path + "load_repeat_trials"
 load_512_model_path = base_model_path + "load_512_trials"
 
-os.environ["WANDB_PROJECT"] = "load_512_trials"
 
 data_paths = [sample_chunked_dsep_path, sample_chunked_dsep_path, sample_chunked_dsep_path]
 model_paths = [no_load_model_path, load_repeat_model_path, load_512_model_path]
 pos_embd_strats = ["no_load", "load_repeat", "load_512"] # "load_repeat", "load_512", or "no_load"
 run_names = ["no_load_trials", "load_repeat_trials", "load_512_trials"]
 
-pick_gpu() # pick an open GPU to use to train
+idx = int(sys.argv[1])
+print(idx, type(idx), run_names[idx])
+pick_gpu(wait_one_gpu=False, gpu_idx=0) # pick an open GPU to use to train
 
 # run trials
-for i in [2]:
+for i in [idx]:
+    os.environ["WANDB_PROJECT"] = run_names[i] 
     run_trials(data_path=data_paths[i],
             model_path=model_paths[i],
             pos_embd_strat = pos_embd_strats[i],

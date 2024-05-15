@@ -1,4 +1,3 @@
-print("---\nUsing modeling_roberta.py\n---")
 # coding=utf-8
 # Copyright 2018 The Google AI Language Team Authors and The HuggingFace Inc. team.
 # Copyright (c) 2018, NVIDIA CORPORATION.  All rights reserved.
@@ -62,6 +61,11 @@ ROBERTA_PRETRAINED_MODEL_ARCHIVE_LIST = [
     # See all RoBERTa models at https://huggingface.co/models?filter=roberta
 ]
 
+import os ###
+DEBUG = os.getenv("TESTING","False").lower() in ('true', '1', 't') #################################
+if DEBUG:
+    print("testing trainer_pt_utils.py")
+    import pdb ###
 
 class RobertaEmbeddings(nn.Module):
     """
@@ -1103,6 +1107,9 @@ class RobertaForMaskedLM(RobertaPreTrainedModel):
             # move labels to correct device to enable model parallelism
             labels = labels.to(prediction_scores.device)
             loss_fct = CrossEntropyLoss()
+            if DEBUG:
+                # pdb.set_trace()
+                pass
             masked_lm_loss = loss_fct(prediction_scores.view(-1, self.config.vocab_size), labels.view(-1))
 
         if not return_dict:
@@ -1116,7 +1123,7 @@ class RobertaForMaskedLM(RobertaPreTrainedModel):
             attentions=outputs.attentions,
         )
 
-    ### ADDITION: expand embeddings method
+    ### ADDITION: expand embeddings method ###########################
     def expand_embds(self, new_T, use_trained, repeat):
         old_embds = self.roberta.embeddings.position_embeddings.weight
         old_T, C = old_embds.shape
@@ -1145,6 +1152,7 @@ class RobertaForMaskedLM(RobertaPreTrainedModel):
         
         new_embds = nn.parameter.Parameter(new_embds)
         self.roberta.embeddings.position_embeddings.weight = new_embds
+    ####################################################################
 
 
 

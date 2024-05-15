@@ -46,7 +46,7 @@ def describe_lens(ds, split='train', user=False):
         print(describe(df['input_ids'].str.len()))
 
 
-def run_trials(data_path, model_path, run_name):
+def train(data_path, model_path, run_name):
 
     # load saved dataset
     print("loading dataset...")
@@ -85,12 +85,12 @@ def run_trials(data_path, model_path, run_name):
         output_dir=model_path,
         overwrite_output_dir=True,
         logging_strategy="steps",
-        logging_steps=8, # low to account for high effective batch size
+        logging_steps=500, # low to account for the high effective batch size
         save_strategy="epoch",
         evaluation_strategy="epoch",
         warmup_ratio=0.06,
-        num_train_epochs=40,
-        per_device_train_batch_size=64,
+        num_train_epochs=50,
+        per_device_train_batch_size=16, # 64,
         save_steps=5000,
         save_total_limit=2,
         seed=42,
@@ -98,6 +98,7 @@ def run_trials(data_path, model_path, run_name):
         metric_for_best_model='eval_loss',
         load_best_model_at_end=True,
         greater_is_better=False,
+        run_name=run_name,
         report_to="wandb",
     )
 
@@ -107,21 +108,17 @@ def run_trials(data_path, model_path, run_name):
         model = AutoModelForMaskedLM.from_pretrained("distilroberta-base",
             config=roberta_config, ignore_mismatched_sizes=True)
         return model
-
+ 
     # data collator - performs batching and masking (i think)
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=True, mlm_probability=0.15)
 
-    def optuna_hp_space(trial):
-        return {
-            "learning_rate": trial.suggest_float("learning_rate", 1e-5, 5e-4, log=True),
-            "weight_decay": trial.suggest_float("weight_decay", 0.01, 0.1, log=False),
-            "gradient_accumulation_steps": trial.suggest_categorical("gradient_accumulation_steps", [2])#, 4, 8, 16, 32]),
-        }
+    # from hyperparam tuning results (new_control_trials.py) ### replacing May
+    args.learning_rate = 5e-5
+    args.weight_decay=6e-2
+    args.gradient_accumulation_steps=1
 
-    def compute_objective(metrics) -> float:
-        metrics = copy.deepcopy(metrics)
-        loss = metrics.pop("eval_loss", None)
-        return loss
+    # create callback for early stopping
+    early_stop = EarlyStoppingCallback(early_stopping_patience=5)
 
     trainer = Trainer(
         model_init=model_init,
@@ -129,14 +126,13 @@ def run_trials(data_path, model_path, run_name):
         train_dataset=ds['train'],
         eval_dataset=ds['dev'],
         data_collator = data_collator,
+        callbacks=[early_stop],
         )
 
-    best_trial = trainer.hyperparameter_search(
-        backend="optuna",
-        hp_space=optuna_hp_space,
-        n_trials=5,
-        compute_objective=compute_objective
-    )   
+    # train and save
+    train_result = trainer.train()
+    eval_result = trainer.evaluate()
+    trainer.save_model()
     wandb.finish()
 
 
@@ -159,28 +155,26 @@ def pick_gpu():
 # ------------------- Main method ---------------------------
 
 base_data_path = "/cronus_data/ssmith/data/blogsUD/"
-base_model_path = "/cronus_data/ssmith/models/blogsUD/trials/"
-sample_chunked_path = base_data_path + "sample_chunked_docss_4096"
-sample_chunked_dsep_path = base_data_path + "sample_chunked_dsep_4096"
-unchunked_512_path = base_data_path + f"unchunked_512_sample"
-control_model_path = base_model_path + "control_trials"
+base_model_path = "/cronus_data/ssmith/models/blogsUD/"
+unchunked_512_path = base_data_path + f"unchunked_512"
+control_model_path = base_model_path + "MAY_control_model"
 
-os.environ["WANDB_PROJECT"] = "control_trials"
+os.environ["WANDB_PROJECT"] = "control_model"
 
 
 if True:
     data_paths = [unchunked_512_path]
     model_paths = [control_model_path]
-    run_names = ["control_trials"]
+    run_names = ["MAY_control_model"]
 
 pick_gpu() # pick an open GPU to use to train
 
-# run trials
+# run training
 for i in [0]:
-    print("running trials")
-    run_trials(data_path=data_paths[i],
+    print("running model")
+    train(data_path=data_paths[i],
             model_path=model_paths[i],
-            run_name = run_names[i],
+            run_name=run_names[i],
     )
     print("\n\n------\n\n------\n\n")
     time.sleep(60)

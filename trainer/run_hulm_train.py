@@ -12,7 +12,7 @@ from transformers import Trainer
 from transformers import EarlyStoppingCallback
 
 import wandb
- 
+
 import torch
 import pandas as pd
 import numpy as np
@@ -44,18 +44,24 @@ def describe_lens(ds, split='train', user=False):
         print(describe(df['input_ids'].str.len()))
 
 
-class TrainParams: # all args for train() in one place
-    def __init__(self, data_path, model_path, run_name, pos_embd_strat, lr, attn_dropout, weight_decay):
+class MyTrainParams: # all args for run() in one place
+    def __init__(self, data_path, model_path, run_name, pos_embd_strat, lr,
+                epochs, weight_decay, logging_steps=500, warmup=None,
+                loading_model=False):
         self.data_path=data_path
         self.model_path=model_path
         self.run_name=run_name
+        self.extend_pos_embds=extend_pos_embds
         self.pos_embd_strat=pos_embd_strat
         self.lr=lr
-        self.attn_dropout=attn_dropout
+        self.warmup=warmup
+        self.epochs=epochs
+        self.sched_type=sched_type
         self.weight_decay=weight_decay
+        self.loading_model=loading_model
 
 
-def train(params: TrainParams):
+def run(params: MyTrainParams):
 
     # load saved dataset
     print("loading dataset...")
@@ -75,7 +81,7 @@ def train(params: TrainParams):
             'new_max_position_embeddings' : 4098, # max seq. length the model could ever have
             'hidden_act' : "gelu", # nonlinearity in the encoder and pooler
             'hidden_dropout_prob' : 0.1, # dropout probability for fully conn. layers
-            'attention_probs_dropout_prob' : params.attn_dropout, # dropout in attn layer
+            'attention_probs_dropout_prob' : 0.1, # dropout in attn layer
             'type_vocab_size' : 1, # for 'token_type_ids' column
             'initializer_range' : 0.02, # stdev for initializing weight matrices
             'layer_norm_eps' : 1e-05, # epsilon in layer norm
@@ -94,28 +100,28 @@ def train(params: TrainParams):
     model = AutoModelForMaskedLM.from_pretrained("distilroberta-base",
             config=roberta_config, ignore_mismatched_sizes=True)
     # expand positional embds with custom method in modeling_roberta.py
-    use_trained = False if params.pos_embd_strat == "no_load" else True
-    repeat = True if params.pos_embd_strat == "load_repeat" else False
-    model.expand_embds(roberta_config.new_max_position_embeddings,
-            use_trained=use_trained, repeat=repeat)
-    
+    if extend_pos_embds:
+        use_trained = False if params.pos_embd_strat == "no_load" else True
+        repeat = True if params.pos_embd_strat == "load_repeat" else False
+        model.expand_embds(roberta_config.new_max_position_embeddings, # expand positional embds with custom method in modeling_roberta.py
+                use_trained=use_trained, repeat=repeat)
 
+    
     # args
     training_args = TrainingArguments(
         output_dir = params.model_path,
-        overwrite_output_dir=True,
+        overwrite_output_dir=False,
         logging_strategy="steps",
-        logging_steps=500,
+        logging_steps=params.logging_steps,
         save_strategy="epoch",
         evaluation_strategy="epoch",
-        gradient_accumulation_steps=1,
-        warmup_ratio=0.02,
-        num_train_epochs=100,
+        num_train_epochs=params.epochs,
         learning_rate=params.lr,
         weight_decay=params.weight_decay,
         per_device_train_batch_size=1,
+        gradient_accumulation_steps=1,
         save_steps=5000,
-        save_total_limit=2,
+        save_total_limit=3,
         prediction_loss_only=False,
         metric_for_best_model='eval_loss',
         load_best_model_at_end=True,
@@ -123,6 +129,13 @@ def train(params: TrainParams):
         run_name=params.run_name,
         report_to="wandb",
     )
+
+    if params.loading_model:
+        training_args.output_dir += "/ctd"
+
+
+    if params.warmup is not None:
+        training_args.warmup_ratio = params.warmup
 
     # data collator - performs batching and masking (i think)
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=True, mlm_probability=0.15)
@@ -148,41 +161,85 @@ def train(params: TrainParams):
 
 
 # method to help pick a free GPU
-def pick_gpu():
-    command = "nvidia-smi --query-gpu=memory.free --format=csv"
-    memory_free_info = sp.check_output(command.split()).decode('ascii').split('\n')[:-1][1:]
-    memory_free_values = [int(x.split()[0]) for i, x in enumerate(memory_free_info)]
-
-    for j in range(len(memory_free_values)):
-        if memory_free_values[j] == 48676:
-            print(f"using GPU {j}")
-            os.environ["CUDA_VISIBLE_DEVICES"] = str(j)
-            break
+def pick_gpu(wait_one_gpu=False, gpu_idx=0):
+    if wait_one_gpu:
+        while True:
+            command = "nvidia-smi --query-gpu=memory.free --format=csv"
+            memory_free_info = sp.check_output(command.split()).decode('ascii').split('\n')[:-1][1:]
+            memory_free_values = [int(x.split()[0]) for i, x in enumerate(memory_free_info)]
+            if memory_free_values[gpu_idx] == 48676:
+                print(f"using GPU {gpu_idx}")
+                os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_idx)
+                return
+            print(f"GPU {gpu_idx} not available, sleeping for 3 minutes")
+            time.sleep(180)
+    else:
+        while True:
+            command = "nvidia-smi --query-gpu=memory.free --format=csv"
+            memory_free_info = sp.check_output(command.split()).decode('ascii').split('\n')[:-1][1:]
+            memory_free_values = [int(x.split()[0]) for i, x in enumerate(memory_free_info)]
+            for idx in range(len(memory_free_values)):
+                if memory_free_values[idx] == 48676:
+                    print(f"using GPU {idx}")
+                    os.environ["CUDA_VISIBLE_DEVICES"] = str(idx)
+                    return
+            print(f"GPUs not available, sleeping for 60 minutes")
+            time.sleep(1800)
+            print("30 minutes left")
+            time.sleep(1800)
 
 
 def main():
     base_data_path = "/cronus_data/ssmith/data/blogsUD/"
-    base_model_path = "/cronus_data/ssmith/models/blogsUD/trainer/"
-    dsep_run_name = "dsep_model"
+    base_model_path = "/cronus_data/ssmith/models/blogsUD/"
+    no_load_run_name = "no_load_model"
+    load_512_run_name = "load_512_model"
+    load_repeat_run_name = "basic_hulm_model"
 
-    dsep_train_params = TrainParams(
-        data_path=base_data_path + "sample_chunked_dsep_4096",
-        model_path=base_model_path + dsep_run_name,
-        run_name=dsep_run_name,
+    # no_load_train_params = MyTrainParams(
+    #     data_path=base_data_path + "sample_chunked_dsep_4096",
+    #     model_path=base_model_path + no_load_run_name,
+    #     run_name=no_load_run_name,
+    #     pos_embd_strat="no_load",
+    #     lr=3e-5,
+    #     weight_decay=8e-2,
+    # )
+    # load_512_train_params = MyTrainParams(
+    #     data_path=base_data_path + "sample_chunked_dsep_4096",
+    #     model_path=base_model_path + load_512_run_name,
+    #     run_name=load_512_run_name,
+    #     pos_embd_strat="load_512",
+    #     lr=3e-5,
+    #     weight_decay=8e-2,
+    # )
+
+    # train 50 epoch model with 6% warmup and linear decay
+    load_repeat_train_params = MyTrainParams(
+        data_path=base_data_path + "chunked_dsep_4096",
+        model_path=base_model_path + "basic_hulm_model_constant_lr",
+        run_name="basic_hulm_model_constant_lr",
         pos_embd_strat="load_repeat",
         lr=1.2e-4,
-        attn_dropout=0.10,
-        weight_decay=7.5e-3,
+        # warmup=0,
+        epochs=50,
+        sched_type="constant",
+        weight_decay=8e-2,
+        resume_from_checkpoint=False,
+        loading_model=False,
     )
 
+
+    # make sure debugging in Trainer is turned off
+    os.environ["TESTING"] = "False"
+
     # set wandb project
-    os.environ["WANDB_PROJECT"] = "dsep_experiment"
+    os.environ["WANDB_PROJECT"] = "basic_hulm_train"
 
     # pick GPU with memory available
-    pick_gpu()
+    pick_gpu(wait_one_gpu=False, gpu_idx=0)
 
     # train
-    for train_params in [dsep_train_params]:
+    for train_params in [load_repeat_train_params]:
         train(train_params)
         print("\n\n------\n\n------\n\n")
         time.sleep(60)
