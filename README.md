@@ -1,6 +1,5 @@
 # Autoencoder Human Language Modeling (HuLM)
 A senior Honors Thesis project with the Human Language Analysis Lab (HLAB) at Stony Brook University. A collection of scripts used to process data and run modeling experiments for a human-aware autoencoder. \
-\
 
 ## Files
 **load_raw_blogs.py** - Converts the blog corpus from a .zip of xml files to a HuggingFace dataset. \
